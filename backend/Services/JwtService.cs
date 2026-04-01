@@ -24,10 +24,17 @@ public class JwtService
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+        var claims = new[]
+         {
+            new Claim(ClaimTypes.NameIdentifier, user.Id), // 🔥 QUAN TRỌNG
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.UserName)
+        };
+
         var token = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
-            claims: null,
+            claims: claims,
             expires: DateTime.Now.AddMinutes(expireMinutes),
             signingCredentials: credentials
         );
