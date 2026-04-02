@@ -30,6 +30,8 @@ namespace backend.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -172,7 +174,7 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Friendships",
+                name: "FriendShips",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -183,15 +185,15 @@ namespace backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Friendships", x => x.Id);
+                    table.PrimaryKey("PK_FriendShips", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Friendships_AspNetUsers_ReceiverId",
+                        name: "FK_FriendShips_AspNetUsers_ReceiverId",
                         column: x => x.ReceiverId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Friendships_AspNetUsers_SenderId",
+                        name: "FK_FriendShips_AspNetUsers_SenderId",
                         column: x => x.SenderId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -418,13 +420,13 @@ namespace backend.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Friendships_ReceiverId",
-                table: "Friendships",
+                name: "IX_FriendShips_ReceiverId",
+                table: "FriendShips",
                 column: "ReceiverId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Friendships_SenderId",
-                table: "Friendships",
+                name: "IX_FriendShips_SenderId",
+                table: "FriendShips",
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
@@ -492,7 +494,7 @@ namespace backend.Migrations
                 name: "Comments");
 
             migrationBuilder.DropTable(
-                name: "Friendships");
+                name: "FriendShips");
 
             migrationBuilder.DropTable(
                 name: "Likes");

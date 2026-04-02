@@ -1,4 +1,4 @@
-public class Friendship
+public class FriendShip
 {
     public int Id { get; set; }
 

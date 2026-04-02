@@ -68,6 +68,11 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<AuthService>();
 // Đăng ký PostService
 builder.Services.AddScoped<IPostsService, PostsService>();
+// Đăng ký FriendService
+builder.Services.AddScoped<IFriendsService, FriendsService>();
+// Đăng ký StoryService
+builder.Services.AddScoped<IStoryService, StoryService>();
+
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(c =>

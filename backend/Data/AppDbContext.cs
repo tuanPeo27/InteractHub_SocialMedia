@@ -9,7 +9,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Post> Posts { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Like> Likes { get; set; }
-    public DbSet<Friendship> Friendships { get; set; }
+    public DbSet<FriendShip> FriendShips { get; set; }
     public DbSet<Story> Stories { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Hashtag> Hashtags { get; set; }
@@ -26,13 +26,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .HasKey(x => new { x.PostId, x.HashtagId });
 
         // Friendship (self join)
-        builder.Entity<Friendship>()
+        builder.Entity<FriendShip>()
             .HasOne(f => f.Sender)
             .WithMany()
             .HasForeignKey(f => f.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<Friendship>()
+        builder.Entity<FriendShip>()
             .HasOne(f => f.Receiver)
             .WithMany()
             .HasForeignKey(f => f.ReceiverId)

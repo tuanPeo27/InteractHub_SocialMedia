@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260331084907_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260402124838_AddDateOfBirthToUser")]
+    partial class AddDateOfBirthToUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,12 +42,18 @@ namespace backend.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -126,7 +132,7 @@ namespace backend.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("Friendship", b =>
+            modelBuilder.Entity("FriendShip", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -152,7 +158,7 @@ namespace backend.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Friendships");
+                    b.ToTable("FriendShips");
                 });
 
             modelBuilder.Entity("Hashtag", b =>
@@ -479,7 +485,7 @@ namespace backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Friendship", b =>
+            modelBuilder.Entity("FriendShip", b =>
                 {
                     b.HasOne("ApplicationUser", "Receiver")
                         .WithMany()
