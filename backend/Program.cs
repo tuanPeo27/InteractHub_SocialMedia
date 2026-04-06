@@ -63,7 +63,6 @@ builder.Services.AddAuthentication(options =>
 
 // Đăng ký JwtService
 builder.Services.AddScoped<JwtService>();
-
 // Đăng ký AuthService
 builder.Services.AddScoped<AuthService>();
 // Đăng ký PostService
@@ -72,6 +71,10 @@ builder.Services.AddScoped<IPostsService, PostsService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
 // Đăng ký StoryService
 builder.Services.AddScoped<IStoryService, StoryService>();
+// Đăng ký UserService
+builder.Services.AddScoped<UserService>();
+// Đăng ký NotificationService
+builder.Services.AddScoped<NotificationService>();
 
 
 builder.Services.AddControllers();

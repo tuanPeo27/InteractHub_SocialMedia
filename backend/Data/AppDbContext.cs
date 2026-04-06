@@ -50,8 +50,16 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         // Notification default
         builder.Entity<Notification>()
-            .Property(n => n.IsRead)
-            .HasDefaultValue(false);
+            .HasOne(n => n.User)
+            .WithMany(u => u.Notifications)
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Notification>()
+            .HasOne(n => n.FromUser)
+            .WithMany()
+            .HasForeignKey(n => n.FromUserId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         // 🔥 FIX CASCADE 
 
