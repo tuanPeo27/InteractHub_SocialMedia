@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Models.Request;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthService _authService;
+    private readonly IAuthService _authService;
 
-    public AuthController(AuthService authService)
+    public AuthController(IAuthService authService)
     {
         _authService = authService;
     }
@@ -18,7 +18,7 @@ public class AuthController : ControllerBase
         var result = await _authService.Login(model);
 
         if (!result.success)
-            return Unauthorized(result);
+            return BadRequest(result);
 
         return Ok(result);
     }

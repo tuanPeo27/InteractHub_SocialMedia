@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 public class UserController : ControllerBase
 {
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
 
-    public UserController(UserService userService)
+    public UserController(IUserService userService)
     {
         _userService = userService;
     }
 
-    // ✅ GET CURRENT USER
+    // GET CURRENT USER
     [HttpGet("me")]
     [Authorize]
     public async Task<IActionResult> Me()
@@ -25,14 +25,14 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    // ✅ GET ALL USERS
+    // GET ALL USERS
     [HttpGet]
     public IActionResult GetAll()
     {
         return Ok(_userService.GetAll());
     }
 
-    // ✅ GET USER BY ID
+    // GET USER BY ID
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
     {
@@ -44,21 +44,29 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    // ✅ UPDATE USER
-    [HttpPut("{id}")]
+    // UPDATE CURRENT USER
+    [HttpPut("me")]
     [Authorize]
-    public async Task<IActionResult> Update(string id, UpdateUserRequest model)
+    public async Task<IActionResult> UpdateMe([FromBody] UpdateUserRequest model)
     {
-        var result = await _userService.Update(id, model);
-        return Ok(result);
+        var result = await _userService.UpdateCurrentUser(User, model);
+
+        if (!result.Success)
+            return BadRequest(result.Message);
+
+        return Ok(new { message = result.Message });
     }
 
-    // ✅ DELETE USER
+    // DELETE USER (ADMIN)
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(string id)
     {
         var result = await _userService.Delete(id);
-        return Ok(result);
+
+        if (!result.Success)
+            return BadRequest(result.Message);
+
+        return Ok(new { message = result.Message });
     }
 }

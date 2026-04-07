@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
-public class UserService
+public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
 
@@ -10,7 +10,7 @@ public class UserService
         _userManager = userManager;
     }
 
-    // 🔥 MAP FUNCTION (QUAN TRỌNG)
+    // 🔥 MAP FUNCTION
     private UserResponse MapUser(ApplicationUser user)
     {
         return new UserResponse
@@ -25,7 +25,6 @@ public class UserService
         };
     }
 
-    // ✅ Lấy user hiện tại
     public async Task<UserResponse?> GetCurrentUser(ClaimsPrincipal principal)
     {
         var user = await _userManager.GetUserAsync(principal);
@@ -34,7 +33,6 @@ public class UserService
         return MapUser(user);
     }
 
-    // ✅ Lấy tất cả user
     public List<UserResponse> GetAll()
     {
         return _userManager.Users
@@ -42,7 +40,6 @@ public class UserService
             .ToList();
     }
 
-    // ✅ Lấy user theo id
     public async Task<UserResponse?> GetById(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
@@ -51,15 +48,13 @@ public class UserService
         return MapUser(user);
     }
 
-    // ✅ Update profile
     public async Task<UserResponse?> Update(string id, UpdateUserRequest model)
     {
-        // 🔥 PHẢI LẤY USER TRƯỚC
         var user = await _userManager.FindByIdAsync(id);
         if (user == null)
             return null;
 
-        // 🔥 UPDATE USERNAME (chuẩn Identity)
+        // Update username
         if (!string.IsNullOrEmpty(model.UserName) && model.UserName != user.UserName)
         {
             var existingUser = await _userManager.FindByNameAsync(model.UserName);
@@ -71,7 +66,7 @@ public class UserService
                 throw new Exception("Không thể cập nhật username");
         }
 
-        // 🔥 UPDATE FIELD KHÁC
+        // Update fields
         user.FullName = model.FullName ?? user.FullName;
         user.Bio = model.Bio ?? user.Bio;
         user.Avatar = model.Avatar ?? user.Avatar;
@@ -83,21 +78,15 @@ public class UserService
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
         return MapUser(user);
-
     }
 
-    // ✅ Delete user
-    public async Task<object> Delete(string id)
+    public async Task<bool> Delete(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null)
-            return new { error = "User không tồn tại" };
+            return false;
 
         var result = await _userManager.DeleteAsync(user);
-
-        if (!result.Succeeded)
-            return result.Errors;
-
-        return new { message = "Delete thành công" };
+        return result.Succeeded;
     }
 }

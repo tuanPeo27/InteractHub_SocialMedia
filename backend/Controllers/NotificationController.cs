@@ -2,63 +2,57 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-[Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Route("api/[controller]")]
 public class NotificationController : ControllerBase
 {
-    private readonly NotificationService _service;
+    private readonly INotificationService _service;
 
-    public NotificationController(NotificationService service)
+    public NotificationController(INotificationService service)
     {
         _service = service;
     }
 
-    // 🔥 lấy userId từ JWT
-    private string GetUserId()
-    {
-        return User.FindFirstValue(ClaimTypes.NameIdentifier);
-    }
-
-    // ✅ GET: api/notification
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetMyNotifications()
     {
-        var userId = GetUserId();
-        var data = await _service.GetByUser(userId);
+        var userId = User.FindFirst("sub")?.Value; // hoặc ClaimTypes.NameIdentifier
 
+        var data = await _service.GetByUser(userId);
         return Ok(data);
     }
 
-    // ✅ POST (test hoặc internal)
     [HttpPost]
     public async Task<IActionResult> Create(CreateNotificationRequest request)
     {
-        await _service.Create(request);
-        return Ok(new { message = "Created" });
+        var result = await _service.Create(request);
+        return Ok(result);
     }
 
-    // ✅ PUT: mark as read
-    [HttpPut("read/{id}")]
+    [HttpPut("{id}/read")]
+    [Authorize]
     public async Task<IActionResult> MarkAsRead(int id)
     {
-        var result = await _service.MarkAsRead(id);
+        var userId = User.FindFirst("sub")?.Value;
 
-        if (!result)
-            return NotFound();
+        var success = await _service.MarkAsRead(id, userId);
+
+        if (!success) return NotFound();
 
         return Ok(new { message = "Đã đọc" });
     }
 
-    // ✅ DELETE
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
-        var result = await _service.Delete(id);
+        var userId = User.FindFirst("sub")?.Value;
 
-        if (!result)
-            return NotFound();
+        var success = await _service.Delete(id, userId);
 
-        return Ok(new { message = "Deleted" });
+        if (!success) return NotFound();
+
+        return Ok(new { message = "Đã xóa" });
     }
 }

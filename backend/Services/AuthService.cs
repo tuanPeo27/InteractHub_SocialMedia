@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using backend.Models.Response;
 using backend.Models.Request;
 
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -18,18 +18,42 @@ public class AuthService
         _jwtService = jwtService;
     }
 
-    // LOGIN
+    // 🔥 MAP USER (optional nhưng nên có)
+    private object MapAuthData(ApplicationUser user, string token)
+    {
+        return new
+        {
+            token = token,
+            email = user.Email,
+            userName = user.UserName,
+            userId = user.Id
+        };
+    }
+
+    // ✅ LOGIN
     public async Task<AuthResponse> Login(LoginModel model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
 
         if (user == null)
-            return new AuthResponse { success = false, message = "Email không tồn tại" };
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Email không tồn tại"
+            };
+        }
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
 
         if (!result.Succeeded)
-            return new AuthResponse { success = false, message = "Sai mật khẩu" };
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Sai mật khẩu"
+            };
+        }
 
         var token = _jwtService.GenerateToken(user);
 
@@ -37,20 +61,23 @@ public class AuthService
         {
             success = true,
             message = "Đăng nhập thành công",
-            data = new
-            {
-                token = token,
-                email = user.Email
-            }
+            data = MapAuthData(user, token)
         };
     }
 
-    // REGISTER
+    // ✅ REGISTER
     public async Task<AuthResponse> Register(RegisterModel model)
     {
         var exist = await _userManager.FindByEmailAsync(model.Email);
+
         if (exist != null)
-            return new AuthResponse { success = false, message = "Email đã tồn tại" };
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Email đã tồn tại"
+            };
+        }
 
         var user = new ApplicationUser
         {
@@ -61,11 +88,13 @@ public class AuthService
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (!result.Succeeded)
+        {
             return new AuthResponse
             {
                 success = false,
-                errors = result.Errors
+                errors = result.Errors.Select(e => e.Description)
             };
+        }
 
         return new AuthResponse
         {
