@@ -10,83 +10,129 @@ public class UserService : IUserService
         _userManager = userManager;
     }
 
-    // 🔥 MAP FUNCTION
-    private UserResponse MapUser(ApplicationUser user)
+    // 🔥 GET CURRENT USER
+    public async Task<UserResponse?> GetCurrentUser(ClaimsPrincipal user)
     {
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId == null) return null;
+
+        var currentUser = await _userManager.FindByIdAsync(userId);
+
+        if (currentUser == null) return null;
+
         return new UserResponse
         {
-            Id = user.Id,
-            UserName = user.UserName,
-            Email = user.Email,
-            FullName = user.FullName,
-            Avatar = user.Avatar,
-            Bio = user.Bio,
-            DateOfBirth = user.DateOfBirth
+            Id = currentUser.Id,
+            UserName = currentUser.UserName ?? "",
+            Email = currentUser.Email ?? ""
         };
     }
 
-    public async Task<UserResponse?> GetCurrentUser(ClaimsPrincipal principal)
+    // 🔥 GET ALL USERS
+    public IEnumerable<UserResponse> GetAll()
     {
-        var user = await _userManager.GetUserAsync(principal);
-        if (user == null) return null;
-
-        return MapUser(user);
+        return _userManager.Users.Select(u => new UserResponse
+        {
+            Id = u.Id,
+            UserName = u.UserName ?? "",
+            Email = u.Email ?? ""
+        }).ToList();
     }
 
-    public List<UserResponse> GetAll()
-    {
-        return _userManager.Users
-            .Select(u => MapUser(u))
-            .ToList();
-    }
-
+    // 🔥 GET USER BY ID
     public async Task<UserResponse?> GetById(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
+
         if (user == null) return null;
 
-        return MapUser(user);
-    }
-
-    public async Task<UserResponse?> Update(string id, UpdateUserRequest model)
-    {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user == null)
-            return null;
-
-        // Update username
-        if (!string.IsNullOrEmpty(model.UserName) && model.UserName != user.UserName)
+        return new UserResponse
         {
-            var existingUser = await _userManager.FindByNameAsync(model.UserName);
-            if (existingUser != null)
-                throw new Exception("Username đã tồn tại");
-
-            var setResult = await _userManager.SetUserNameAsync(user, model.UserName);
-            if (!setResult.Succeeded)
-                throw new Exception("Không thể cập nhật username");
-        }
-
-        // Update fields
-        user.FullName = model.FullName ?? user.FullName;
-        user.Bio = model.Bio ?? user.Bio;
-        user.Avatar = model.Avatar ?? user.Avatar;
-        user.DateOfBirth = model.DateOfBirth ?? user.DateOfBirth;
-
-        var result = await _userManager.UpdateAsync(user);
-
-        if (!result.Succeeded)
-            throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
-
-        return MapUser(user);
+            Id = user.Id,
+            UserName = user.UserName ?? "",
+            Email = user.Email ?? ""
+        };
     }
 
-    public async Task<bool> Delete(string id)
+    // 🔥 UPDATE CURRENT USER
+    public async Task<ServiceResponse> UpdateCurrentUser(ClaimsPrincipal user, UpdateUserRequest model)
+{
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+    if (userId == null)
+        return new ServiceResponse
+        {
+            Success = false,
+            Message = "Unauthorized"
+        };
+
+    var currentUser = await _userManager.FindByIdAsync(userId);
+
+    if (currentUser == null)
+        return new ServiceResponse
+        {
+            Success = false,
+            Message = "User not found"
+        };
+
+    // 🔥 UPDATE FIELD (chỉ update nếu có data)
+    if (!string.IsNullOrEmpty(model.UserName))
+        currentUser.UserName = model.UserName;
+
+    if (!string.IsNullOrEmpty(model.FullName))
+        currentUser.FullName = model.FullName;
+
+    if (!string.IsNullOrEmpty(model.Bio))
+        currentUser.Bio = model.Bio;
+
+    if (!string.IsNullOrEmpty(model.Avatar))
+        currentUser.Avatar = model.Avatar;
+
+    if (model.DateOfBirth.HasValue)
+        currentUser.DateOfBirth = model.DateOfBirth.Value;
+
+    var result = await _userManager.UpdateAsync(currentUser);
+
+    if (!result.Succeeded)
+        return new ServiceResponse
+        {
+            Success = false,
+            Message = "Update failed"
+        };
+
+    return new ServiceResponse
+    {
+        Success = true,
+        Message = "Cập nhật thành công"
+    };
+}
+
+    // 🔥 DELETE USER
+    public async Task<ServiceResponse> Delete(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
+
         if (user == null)
-            return false;
+            return new ServiceResponse
+            {
+                Success = false,
+                Message = "User not found"
+            };
 
         var result = await _userManager.DeleteAsync(user);
-        return result.Succeeded;
+
+        if (!result.Succeeded)
+            return new ServiceResponse
+            {
+                Success = false,
+                Message = "Delete failed"
+            };
+
+        return new ServiceResponse
+        {
+            Success = true,
+            Message = "Xóa thành công"
+        };
     }
 }
