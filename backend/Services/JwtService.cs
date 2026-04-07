@@ -16,19 +16,19 @@ public class JwtService
     {
         var jwtSection = _config.GetSection("Jwt");
 
-        var key = jwtSection["Key"];
-        var issuer = jwtSection["Issuer"];
-        var audience = jwtSection["Audience"];
-        var expireMinutes = int.Parse(jwtSection["ExpireMinutes"]);
+        var key = jwtSection["Key"] ?? throw new Exception("JWT Key is not configured.");
+        var issuer = jwtSection["Issuer"] ?? throw new Exception("JWT Issuer is not configured.");
+        var audience = jwtSection["Audience"] ?? throw new Exception("JWT Audience is not configured.");
+        var expireMinutes = int.Parse(jwtSection["ExpireMinutes"] ?? throw new Exception("JWT ExpireMinutes is not configured."));
 
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
          {
-            new Claim(ClaimTypes.NameIdentifier, user.Id), // 🔥 QUAN TRỌNG
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.UserName)
+            new Claim(ClaimTypes.NameIdentifier, user.Id ?? ""), // 🔥 QUAN TRỌNG
+            new Claim(ClaimTypes.Email, user.Email ?? ""),
+            new Claim(ClaimTypes.Name, user.UserName ?? "")
         };
 
         var token = new JwtSecurityToken(

@@ -17,7 +17,10 @@ public class NotificationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetMyNotifications()
     {
-        var userId = User.FindFirst("sub")?.Value; // hoặc ClaimTypes.NameIdentifier
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))        {
+            return Unauthorized();
+        }
 
         var data = await _service.GetByUser(userId);
         return Ok(data);

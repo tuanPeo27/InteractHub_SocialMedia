@@ -15,10 +15,10 @@ public class NotificationService : INotificationService
         return new NotificationResponse
         {
             Id = n.Id,
-            Content = n.Content,
+            Content = n.Content ?? "",
             IsRead = n.IsRead,
             CreatedAt = n.CreatedAt,
-            FromUserId = n.FromUserId,
+            FromUserId = n.FromUserId ?? "",
             FromUserName = n.FromUser != null ? n.FromUser.UserName : null,
             Type = n.Type
         };
@@ -29,10 +29,10 @@ public class NotificationService : INotificationService
     {
         var notification = new Notification
         {
-            UserId = request.UserId,
-            FromUserId = request.FromUserId,
-            Content = request.Content,
-            Type = request.Type,
+            UserId = request.UserId ?? throw new Exception("UserId is required"),
+            FromUserId = request.FromUserId ?? throw new Exception("FromUserId is required"),
+            Content = request.Content ?? throw new Exception("Content is required"),
+            Type = request.Type ?? throw new Exception("Type is required"),
             CreatedAt = DateTime.UtcNow
         };
 
