@@ -1,3 +1,7 @@
+namespace backend.Interfaces;
+
+using backend.Models.Entities;
+
 public interface INotificationService
 {
     Task<NotificationResponse> Create(CreateNotificationRequest request);

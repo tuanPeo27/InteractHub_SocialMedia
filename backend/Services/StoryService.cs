@@ -1,8 +1,8 @@
 
-public interface IStoryService
-{
-    Task CreateAsync(string userId, StoryCreateDto dto);
-}
+using backend.Interfaces;
+using backend.Models.Entities;
+
+namespace backend.Services;
 
 public class StoryService : IStoryService
 {

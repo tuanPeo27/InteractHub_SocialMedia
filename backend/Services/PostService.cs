@@ -1,12 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-public interface IPostsService
-{
-    Task<List<PostDTO>> GetAllAsync();
-    Task<PostDTO?> GetByIdAsync(int id);
-    Task<PostDTO> CreateAsync(CreatePostDTO dto, string userId);
-    Task<bool> UpdateAsync(int id, UpdatePostDTO dto);
-    Task<bool> DeleteAsync(int id);
-}
+
+using backend.Interfaces;
+using backend.Models.Entities;
+
+namespace backend.Services;
 
 // Services/PostService.cs
 public class PostsService : IPostsService

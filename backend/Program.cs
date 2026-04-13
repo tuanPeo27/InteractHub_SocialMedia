@@ -4,6 +4,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+
+using backend.Interfaces;
+using backend.Services;
+using backend.Models.Entities;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // DB
@@ -110,9 +115,11 @@ var app = builder.Build();
 app.UseStaticFiles();
 
 // Swagger
-app.UseSwagger();
-app.UseSwaggerUI();
-
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 // CORS
 app.UseCors("AllowReact");
 

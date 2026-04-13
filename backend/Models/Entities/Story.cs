@@ -1,3 +1,5 @@
+namespace backend.Models.Entities;
+
 public class Story
 {
     public int Id { get; set; }

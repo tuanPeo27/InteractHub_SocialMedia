@@ -1,3 +1,5 @@
+namespace backend.Models.Entities;
+
 public class Hashtag
 {
     public int Id { get; set; }

@@ -1,3 +1,5 @@
+namespace backend.Models.Entities;
+
 public class FriendShip
 {
     public int Id { get; set; }
