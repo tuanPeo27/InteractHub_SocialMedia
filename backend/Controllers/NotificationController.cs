@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using backend.Interfaces;
+namespace backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -18,7 +20,8 @@ public class NotificationController : ControllerBase
     public async Task<IActionResult> GetMyNotifications()
     {
         var userId = User.FindFirst("sub")?.Value;
-        if (string.IsNullOrEmpty(userId))        {
+        if (string.IsNullOrEmpty(userId))
+        {
             return Unauthorized();
         }
 

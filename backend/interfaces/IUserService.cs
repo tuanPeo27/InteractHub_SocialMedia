@@ -1,4 +1,7 @@
 using System.Security.Claims;
+namespace backend.Interfaces;
+
+
 
 public interface IUserService
 {

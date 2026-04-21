@@ -1,3 +1,5 @@
+namespace backend.Models.Entities;
+
 public class Like
 {
     public int Id { get; set; }

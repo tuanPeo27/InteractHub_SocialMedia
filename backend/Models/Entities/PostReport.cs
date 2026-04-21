@@ -1,3 +1,5 @@
+namespace backend.Models.Entities;
+
 public class PostReport
 {
     public int Id { get; set; }

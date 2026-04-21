@@ -1,3 +1,5 @@
+namespace backend.Models.Entities;
+
 public class Notification
 {
     public int Id { get; set; }

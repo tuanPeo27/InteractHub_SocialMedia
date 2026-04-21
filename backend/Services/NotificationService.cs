@@ -1,5 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 
+using backend.Interfaces;
+using backend.Models.Entities;
+
+namespace backend.Services;
+
 public class NotificationService : INotificationService
 {
     private readonly AppDbContext _context;

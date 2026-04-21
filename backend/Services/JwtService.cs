@@ -3,6 +3,11 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
+using backend.Interfaces;
+using backend.Models.Entities;
+
+namespace backend.Services;
+
 public class JwtService
 {
     private readonly IConfiguration _config;

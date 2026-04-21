@@ -5,6 +5,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using Microsoft.OpenApi.Models;
+
+using backend.Interfaces;
+using backend.Services;
+using backend.Models.Entities;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // DB
@@ -110,14 +115,12 @@ var app = builder.Build();
 
 app.UseStaticFiles();
 
+// Swagger
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-    // Swagger
-    app.UseSwaggerUI();
     app.UseSwagger();
+    app.UseSwaggerUI();
 }
-
 // CORS
 app.UseCors("AllowReact");
 

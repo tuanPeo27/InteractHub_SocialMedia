@@ -1,3 +1,5 @@
+namespace backend.Models.Entities;
+
 public class PostHashtag
 {
     public int PostId { get; set; }

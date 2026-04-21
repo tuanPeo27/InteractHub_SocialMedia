@@ -1,6 +1,10 @@
+using backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+
+
+namespace backend.Controllers;
 
 [ApiController]
 [Route("api/friends")]
