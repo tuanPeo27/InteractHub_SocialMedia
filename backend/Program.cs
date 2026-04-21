@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Security.Claims;
 using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,7 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
+        RoleClaimType = ClaimTypes.Role,
         ValidIssuer = jwt["Issuer"] ?? throw new Exception("JWT Issuer is not configured."),
         ValidAudience = jwt["Audience"] ?? throw new Exception("JWT Audience is not configured."),
         IssuerSigningKey = new SymmetricSecurityKey(
@@ -106,12 +108,15 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ✅ QUAN TRỌNG
 app.UseStaticFiles();
 
-// Swagger
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    // Swagger
+    app.UseSwaggerUI();
+    app.UseSwagger();
+}
 
 // CORS
 app.UseCors("AllowReact");

@@ -12,7 +12,7 @@ public class JwtService
         _config = config;
     }
 
-    public string GenerateToken(ApplicationUser user)
+    public string GenerateToken(ApplicationUser user, IEnumerable<string>? roles = null)
     {
         var jwtSection = _config.GetSection("Jwt");
 
@@ -24,12 +24,17 @@ public class JwtService
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
          {
             new Claim(ClaimTypes.NameIdentifier, user.Id ?? ""), // 🔥 QUAN TRỌNG
             new Claim(ClaimTypes.Email, user.Email ?? ""),
             new Claim(ClaimTypes.Name, user.UserName ?? "")
         };
+
+        if (roles != null)
+        {
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        }
 
         var token = new JwtSecurityToken(
             issuer: issuer,
