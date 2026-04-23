@@ -3,7 +3,8 @@ using System.Security.Claims;
 
 using backend.Interfaces;
 using backend.Models.Entities;
-
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 namespace backend.Services;
 
 public class UserService : IUserService

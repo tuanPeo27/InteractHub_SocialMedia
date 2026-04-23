@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using backend.Models.Request;
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 using backend.Interfaces;
 namespace backend.Controllers;
 

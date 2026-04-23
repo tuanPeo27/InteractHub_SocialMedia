@@ -1,3 +1,5 @@
+namespace backend.DTOs.Request;
+
 public class CreateNotificationRequest
 {
     public string? UserId { get; set; }          // người nhận

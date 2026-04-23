@@ -2,7 +2,8 @@ using Microsoft.EntityFrameworkCore;
 
 using backend.Interfaces;
 using backend.Models.Entities;
-
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 namespace backend.Services;
 
 // Services/PostService.cs
@@ -15,11 +16,11 @@ public class PostsService : IPostsService
         _context = context;
     }
 
-    public async Task<List<PostDTO>> GetAllAsync()
+    public async Task<List<PostResponse>> GetAllAsync()
     {
         return await _context.Posts
             .OrderByDescending(p => p.CreatedAt)
-            .Select(p => new PostDTO
+            .Select(p => new PostResponse
             {
                 Id = p.Id,
                 Content = p.Content,
@@ -30,11 +31,11 @@ public class PostsService : IPostsService
             .ToListAsync();
     }
 
-    public async Task<PostDTO?> GetByIdAsync(int id)
+    public async Task<PostResponse?> GetByIdAsync(int id)
     {
         return await _context.Posts
             .Where(p => p.Id == id)
-            .Select(p => new PostDTO
+            .Select(p => new PostResponse
             {
                 Id = p.Id,
                 Content = p.Content,
@@ -45,7 +46,7 @@ public class PostsService : IPostsService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<PostDTO> CreateAsync(CreatePostDTO dto, string userId)
+    public async Task<PostResponse> CreateAsync(CreatePostRequest dto, string userId)
     {
         var post = new Post
         {
@@ -57,7 +58,7 @@ public class PostsService : IPostsService
         _context.Posts.Add(post);
         await _context.SaveChangesAsync();
 
-        return new PostDTO
+        return new PostResponse
         {
             Id = post.Id,
             Content = post.Content,
@@ -67,7 +68,7 @@ public class PostsService : IPostsService
         };
     }
 
-    public async Task<bool> UpdateAsync(int id, UpdatePostDTO dto)
+    public async Task<bool> UpdateAsync(int id, UpdatePostRequest dto)
     {
         var post = await _context.Posts.FindAsync(id);
         if (post == null) return false;

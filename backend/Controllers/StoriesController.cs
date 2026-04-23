@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 using backend.Interfaces;
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 namespace backend.Controllers;
 
 
@@ -25,7 +27,7 @@ public class StoriesController : ControllerBase
 
     // POST: api/stories
     [HttpPost]
-    public async Task<IActionResult> Create(StoryCreateDto dto)
+    public async Task<IActionResult> Create(StoryCreateRequest dto)
     {
         var userId = GetUserId();
 

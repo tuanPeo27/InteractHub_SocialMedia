@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using backend.Interfaces;
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 namespace backend.Controllers;
 
 [ApiController]

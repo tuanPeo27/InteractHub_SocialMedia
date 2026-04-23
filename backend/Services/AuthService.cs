@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
-using backend.Models.Response;
-using backend.Models.Request;
-
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 using backend.Interfaces;
 using backend.Models.Entities;
 

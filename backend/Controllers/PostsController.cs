@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 using backend.Interfaces;
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 namespace backend.Controllers;
 
 
@@ -35,7 +37,7 @@ public class PostsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreatePostDTO dto)
+    public async Task<IActionResult> Create(CreatePostRequest dto)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -44,7 +46,7 @@ public class PostsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, UpdatePostDTO dto)
+    public async Task<IActionResult> Update(int id, UpdatePostRequest dto)
     {
         var success = await _service.UpdateAsync(id, dto);
         if (!success) return NotFound();

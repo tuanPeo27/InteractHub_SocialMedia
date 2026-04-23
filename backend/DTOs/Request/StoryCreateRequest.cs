@@ -1,4 +1,6 @@
-public class StoryCreateDto
+namespace backend.DTOs.Request;
+
+public class StoryCreateRequest
 {
     public string Content { get; set; }
     public string ImageUrl { get; set; }

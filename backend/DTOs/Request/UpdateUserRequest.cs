@@ -1,3 +1,5 @@
+namespace backend.DTOs.Request;
+
 public class UpdateUserRequest
 {
     public string? UserName { get; set; }

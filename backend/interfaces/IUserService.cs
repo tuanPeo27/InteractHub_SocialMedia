@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 namespace backend.Interfaces;
 
 

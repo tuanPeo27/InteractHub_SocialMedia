@@ -1,3 +1,5 @@
+namespace backend.DTOs.Response;
+
 public class ServiceResponse
 {
     public bool Success { get; set; }

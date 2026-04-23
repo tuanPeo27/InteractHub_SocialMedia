@@ -1,7 +1,8 @@
 
 using backend.Interfaces;
 using backend.Models.Entities;
-
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 namespace backend.Services;
 
 public class StoryService : IStoryService
@@ -13,7 +14,7 @@ public class StoryService : IStoryService
         _context = context;
     }
 
-    public async Task CreateAsync(string userId, StoryCreateDto dto)
+    public async Task CreateAsync(string userId, StoryCreateRequest dto)
     {
         if (string.IsNullOrEmpty(dto.ImageUrl) && string.IsNullOrEmpty(dto.Content))
             throw new Exception("Story phải có content hoặc image");
@@ -24,7 +25,6 @@ public class StoryService : IStoryService
             UserId = userId,
             CreatedAt = DateTime.UtcNow,
 
-            // nếu không truyền thì auto 24h
             ExpiredAt = dto.ExpiresAt == default
                 ? DateTime.UtcNow.AddHours(24)
                 : dto.ExpiresAt

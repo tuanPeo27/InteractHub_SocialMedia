@@ -82,6 +82,12 @@ builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 // Đăng ký NotificationService
 builder.Services.AddScoped<INotificationService, NotificationService>();
+// Đăng ký ReportService
+builder.Services.AddScoped<IReportService, ReportService>();
+
+// Đăng ký AdminService
+builder.Services.AddScoped<IAdminService, AdminService>();
+
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(c =>

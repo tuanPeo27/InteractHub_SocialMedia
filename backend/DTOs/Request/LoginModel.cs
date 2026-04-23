@@ -1,4 +1,4 @@
-namespace backend.Models.Request
+namespace backend.DTOs.Request
 {
     public class LoginModel
     {

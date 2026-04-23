@@ -1,4 +1,6 @@
-public class PostDTO
+namespace backend.DTOs.Response;
+
+public class PostResponse
 {
     public int Id { get; set; }
     public string Content { get; set; }

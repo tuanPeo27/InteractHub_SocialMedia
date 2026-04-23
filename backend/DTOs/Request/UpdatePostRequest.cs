@@ -1,5 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-public class UpdatePostDTO
+namespace backend.DTOs.Request;
+
+public class UpdatePostRequest
+
 {
     [MaxLength(500)]
     public string Content { get; set; }

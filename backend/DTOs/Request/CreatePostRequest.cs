@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-public class CreatePostDTO
+namespace backend.DTOs.Request;
+
+public class CreatePostRequest
 {
     [Required]
     [MaxLength(500)]

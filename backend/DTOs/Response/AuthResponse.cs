@@ -1,4 +1,5 @@
-namespace backend.Models.Response;
+namespace backend.DTOs.Response;
+
 public class AuthResponse
 {
     public bool success { get; set; }

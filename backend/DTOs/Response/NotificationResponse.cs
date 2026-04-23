@@ -1,3 +1,5 @@
+namespace backend.DTOs.Response;
+
 public class NotificationResponse
 {
     public int Id { get; set; }

@@ -1,6 +1,8 @@
 
 namespace backend.Interfaces;
 
+using backend.DTOs.Request;
+using backend.DTOs.Response;
 using backend.Models.Entities;
 public interface IFriendsService
 {

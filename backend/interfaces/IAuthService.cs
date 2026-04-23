@@ -1,5 +1,5 @@
-using backend.Models.Response;
-using backend.Models.Request;
+using backend.DTOs.Response;
+using backend.DTOs.Request;
 namespace backend.Interfaces;
 
 public interface IAuthService
