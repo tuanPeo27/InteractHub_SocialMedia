@@ -26,8 +26,15 @@ public class ReportController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var result = await _service.CreateReportAsync(userId, dto);
+        try
+        {
+            var result = await _service.CreateReportAsync(userId, dto);
 
-        return Ok(new { message = "Reported successfully" });
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
 }

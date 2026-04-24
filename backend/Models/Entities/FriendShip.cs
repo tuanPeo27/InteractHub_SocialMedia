@@ -1,5 +1,7 @@
 namespace backend.Models.Entities;
 
+using backend.Models.Enums;
+
 public class FriendShip
 {
     public int Id { get; set; }
@@ -10,5 +12,5 @@ public class FriendShip
     public string ReceiverId { get; set; }
     public ApplicationUser Receiver { get; set; }
 
-    public string Status { get; set; } // Pending, Accepted
+    public FriendStatus Status { get; set; }
 }

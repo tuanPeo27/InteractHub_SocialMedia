@@ -5,6 +5,7 @@ using backend.Interfaces;
 using backend.Models.Entities;
 using backend.DTOs.Request;
 using backend.DTOs.Response;
+using backend.Models.Enums;
 namespace backend.Services;
 
 
@@ -29,7 +30,7 @@ public class FriendsService : IFriendsService
         {
             SenderId = senderId,
             ReceiverId = receiverId,
-            Status = "Pending"
+            Status = FriendStatus.Pending,
         };
 
         _context.FriendShips.Add(request);
@@ -43,7 +44,7 @@ public class FriendsService : IFriendsService
         if (request == null || request.ReceiverId != userId)
             throw new Exception("Không hợp lệ");
 
-        request.Status = "Accepted";
+        request.Status = FriendStatus.Accepted;
         await _context.SaveChangesAsync();
     }
 
@@ -54,7 +55,7 @@ public class FriendsService : IFriendsService
         if (request == null || request.ReceiverId != userId)
             throw new Exception("Không hợp lệ");
 
-        request.Status = "Rejected";
+        request.Status = FriendStatus.Rejected;
         await _context.SaveChangesAsync();
     }
 
@@ -63,7 +64,26 @@ public class FriendsService : IFriendsService
         return await _context.FriendShips
             .Where(x =>
                 (x.SenderId == userId || x.ReceiverId == userId)
-                && x.Status == "Accepted")
+                && x.Status == FriendStatus.Accepted)
             .ToListAsync();
+    }
+
+    public async Task<List<string>> GetFriendIds(string userId)
+    {
+        return await _context.FriendShips
+            .Where(f =>
+                (f.SenderId == userId || f.ReceiverId == userId)
+                && f.Status == FriendStatus.Accepted)
+            .Select(f => f.SenderId == userId ? f.ReceiverId : f.SenderId)
+            .ToListAsync();
+    }
+
+    public async Task<bool> IsFriend(string user1, string user2)
+    {
+        return await _context.FriendShips
+            .AnyAsync(f =>
+                ((f.SenderId == user1 && f.ReceiverId == user2) ||
+                 (f.SenderId == user2 && f.ReceiverId == user1))
+                && f.Status == FriendStatus.Accepted);
     }
 }
