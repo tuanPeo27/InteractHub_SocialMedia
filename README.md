@@ -140,7 +140,7 @@ InteractHub
 ├── backend
 │   ├── Controllers
 │   ├── Services
-│   ├── Repositories
+│   ├── Interfaces
 │   ├── DTOs
 │   ├── Models
 │   ├── Data
@@ -187,6 +187,7 @@ GET  /api/posts
 POST /api/posts
 POST /api/posts/{id}/like
 GET  /api/users/{id}
+.........
 ```
 
 API documentation is available at:
@@ -256,7 +257,7 @@ https://interacthub.azurewebsites.net
 ## Clone Repository
 
 ```
-git clone https://github.com/yourusername/interacthub.git
+git clone https://github.com/tuanPeo27/InteractHub_SocialMedia.git
 ```
 
 ---
