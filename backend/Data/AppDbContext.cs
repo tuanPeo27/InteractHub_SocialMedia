@@ -38,6 +38,10 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(f => f.ReceiverId)
             .OnDelete(DeleteBehavior.Restrict);
 
+
+        builder.Entity<Hashtag>()
+            .HasIndex(x => x.Name)
+            .IsUnique();
         // Like unique
         builder.Entity<Like>()
             .HasIndex(l => new { l.UserId, l.PostId })

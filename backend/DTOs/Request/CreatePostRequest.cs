@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using backend.Models.Enums;
 namespace backend.DTOs.Request;
 
 public class CreatePostRequest
@@ -8,4 +9,6 @@ public class CreatePostRequest
     public string Content { get; set; }
 
     public string? ImageUrl { get; set; }
+    public PostVisibility Visibility { get; set; }
+
 }

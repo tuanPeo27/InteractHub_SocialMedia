@@ -100,7 +100,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 // Đăng ký ReportService
 builder.Services.AddScoped<IReportService, ReportService>();
-
+// Đăng ký LikeService
+builder.Services.AddScoped<ILikeService, LikeService>();
 // Đăng ký AdminService
 builder.Services.AddScoped<IAdminService, AdminService>();
 
@@ -108,6 +109,12 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, SubClaimUserIdProvider>();
 
+// Đăng ký PrivacyService
+builder.Services.AddScoped<IPrivacyService, PrivacyService>();
+// Đăng ký CommentService
+builder.Services.AddScoped<ICommentService, CommentService>();
+// Đăng ký HashtagService
+builder.Services.AddScoped<IHashtagService, HashtagService>();
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(c =>

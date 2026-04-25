@@ -19,7 +19,7 @@ public class FriendsController : ControllerBase
 
     private string GetUserId()
     {
-        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return User.FindFirstValue(ClaimTypes.NameIdentifier);
     }
 
     [Authorize]

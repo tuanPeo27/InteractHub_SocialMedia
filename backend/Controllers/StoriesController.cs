@@ -7,41 +7,58 @@ using backend.DTOs.Request;
 using backend.DTOs.Response;
 namespace backend.Controllers;
 
-
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class StoriesController : ControllerBase
 {
-    private readonly IStoryService _storyService;
+    private readonly IStoryService _service;
 
-    public StoriesController(IStoryService storyService)
+    public StoriesController(IStoryService service)
     {
-        _storyService = storyService;
+        _service = service;
     }
 
-    private string GetUserId()
-    {
-        return User.FindFirstValue(ClaimTypes.NameIdentifier);
-    }
-
-    // POST: api/stories
     [HttpPost]
-    public async Task<IActionResult> Create(StoryCreateRequest dto)
+    public async Task<IActionResult> Create(CreateStoryRequest dto)
     {
-        var userId = GetUserId();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var story = await _service.CreateAsync(userId, dto);
+        return Ok(story);
+    }
 
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
+    [HttpGet("my-stories")]
+    public async Task<IActionResult> GetMyStories()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var stories = await _service.GetMyStories(userId);
+        return Ok(stories);
+    }
+
+    [HttpGet("feed")]
+    public async Task<IActionResult> GetFeed()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var stories = await _service.GetFeed(userId);
+        return Ok(stories);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         try
         {
-            await _storyService.CreateAsync(userId, dto);
-            return Ok("Đã đăng story");
+            var success = await _service.DeleteAsync(id, userId);
+
+            if (!success) return NotFound();
+
+            return Ok("Deleted successfully");
         }
-        catch (Exception ex)
+        catch (UnauthorizedAccessException)
         {
-            return BadRequest(ex.Message);
+            return Forbid();
         }
     }
 }
