@@ -5,10 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.SignalR;
 
 using backend.Interfaces;
 using backend.Services;
 using backend.Models.Entities;
+using backend.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("http://localhost:5173")
+                .AllowCredentials()
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
@@ -57,6 +60,19 @@ builder.Services.AddAuthentication(options =>
 
     options.Events = new JwtBearerEvents
     {
+        OnMessageReceived = context =>
+        {
+            // SignalR sends the JWT as a query string param for WebSockets/SSE.
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notifications"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        },
         OnChallenge = context =>
         {
             context.HandleResponse();
@@ -87,6 +103,10 @@ builder.Services.AddScoped<IReportService, ReportService>();
 
 // Đăng ký AdminService
 builder.Services.AddScoped<IAdminService, AdminService>();
+
+// SignalR (Realtime notifications)
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, SubClaimUserIdProvider>();
 
 
 builder.Services.AddControllers();
@@ -135,6 +155,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications");
 Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
 
 app.Run();

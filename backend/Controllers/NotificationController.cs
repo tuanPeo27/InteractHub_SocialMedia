@@ -21,7 +21,7 @@ public class NotificationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetMyNotifications()
     {
-        var userId = User.FindFirst("sub")?.Value;
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
@@ -32,8 +32,17 @@ public class NotificationController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Create(CreateNotificationRequest request)
     {
+        var fromUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(fromUserId))
+        {
+            return Unauthorized();
+        }
+
+        request.FromUserId = fromUserId;
+
         var result = await _service.Create(request);
         return Ok(result);
     }
@@ -42,7 +51,12 @@ public class NotificationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> MarkAsRead(int id)
     {
-        var userId = User.FindFirst("sub")?.Value;
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
 
         var success = await _service.MarkAsRead(id, userId);
 
@@ -55,7 +69,12 @@ public class NotificationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
-        var userId = User.FindFirst("sub")?.Value;
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
 
         var success = await _service.Delete(id, userId);
 

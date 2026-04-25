@@ -31,7 +31,7 @@ public class JwtService
 
         var claims = new List<Claim>
          {
-            new Claim(ClaimTypes.NameIdentifier, user.Id ?? ""), // 🔥 QUAN TRỌNG
+            new Claim(ClaimTypes.NameIdentifier, user.Id ?? ""),
             new Claim(ClaimTypes.Email, user.Email ?? ""),
             new Claim(ClaimTypes.Name, user.UserName ?? "")
         };

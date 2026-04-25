@@ -1,18 +1,22 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 
 using backend.Interfaces;
 using backend.Models.Entities;
 using backend.DTOs.Request;
 using backend.DTOs.Response;
+using backend.Hubs;
 namespace backend.Services;
 
 public class NotificationService : INotificationService
 {
     private readonly AppDbContext _context;
+    private readonly IHubContext<NotificationHub, INotificationClient> _hub;
 
-    public NotificationService(AppDbContext context)
+    public NotificationService(AppDbContext context, IHubContext<NotificationHub, INotificationClient> hub)
     {
         _context = context;
+        _hub = hub;
     }
 
     // 🔥 MAP FUNCTION
@@ -48,7 +52,9 @@ public class NotificationService : INotificationService
         // load FromUser nếu cần
         await _context.Entry(notification).Reference(n => n.FromUser).LoadAsync();
 
-        return Map(notification);
+        var dto = Map(notification);
+        await _hub.Clients.User(notification.UserId).NotificationCreated(dto);
+        return dto;
     }
 
     // ✅ GET ALL theo user
@@ -82,6 +88,8 @@ public class NotificationService : INotificationService
         notification.IsRead = true;
         await _context.SaveChangesAsync();
 
+        await _hub.Clients.User(userId).NotificationRead(id);
+
         return true;
     }
 
@@ -95,6 +103,8 @@ public class NotificationService : INotificationService
 
         _context.Notifications.Remove(notification);
         await _context.SaveChangesAsync();
+
+        await _hub.Clients.User(userId).NotificationDeleted(id);
 
         return true;
     }

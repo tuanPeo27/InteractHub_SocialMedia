@@ -17,7 +17,6 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    // GET CURRENT USER
     [HttpGet("me")]
     [Authorize]
     public async Task<IActionResult> Me()
