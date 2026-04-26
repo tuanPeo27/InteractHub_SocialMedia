@@ -21,7 +21,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>();
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 
 // CORS
 builder.Services.AddCors(options =>
