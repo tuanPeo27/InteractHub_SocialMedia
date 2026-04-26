@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using System.Text;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.WebUtilities;
 using backend.DTOs.Request;
 using backend.DTOs.Response;
 using backend.Interfaces;
@@ -12,17 +15,51 @@ public class AuthService : IAuthService
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly JwtService _jwtService;
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _config;
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         RoleManager<IdentityRole> roleManager,
-        JwtService jwtService)
+        JwtService jwtService,
+        IEmailService emailService,
+        IConfiguration config)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _roleManager = roleManager;
         _jwtService = jwtService;
+        _emailService = emailService;
+        _config = config;
+    }
+
+    private static string EncodeToken(string token)
+    {
+        var tokenBytes = Encoding.UTF8.GetBytes(token);
+        return WebEncoders.Base64UrlEncode(tokenBytes);
+    }
+
+    private static string DecodeToken(string encodedToken)
+    {
+        var tokenBytes = WebEncoders.Base64UrlDecode(encodedToken);
+        return Encoding.UTF8.GetString(tokenBytes);
+    }
+
+    private string? TryBuildResetPasswordLink(string email, string encodedToken)
+    {
+        var baseUrl = _config["Frontend:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(baseUrl))
+            return null;
+
+        var path = _config["Frontend:ResetPasswordPath"];
+        if (string.IsNullOrWhiteSpace(path))
+            path = "/reset-password";
+
+        var safeEmail = UrlEncoder.Default.Encode(email);
+        var safeToken = UrlEncoder.Default.Encode(encodedToken);
+
+        return $"{baseUrl.TrimEnd('/')}{path}?email={safeEmail}&token={safeToken}";
     }
 
     // 🔥 MAP USER (optional nhưng nên có)
@@ -149,6 +186,141 @@ public class AuthService : IAuthService
         {
             success = true,
             message = "Đăng ký thành công"
+        };
+    }
+
+    public async Task<AuthResponse> ChangePassword(string userId, ChangePasswordRequest model)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Unauthorized"
+            };
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null)
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "User không tồn tại"
+            };
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Đổi mật khẩu thất bại",
+                errors = result.Errors.Select(e => e.Description)
+            };
+        }
+
+        return new AuthResponse
+        {
+            success = true,
+            message = "Đổi mật khẩu thành công"
+        };
+    }
+
+    public async Task<AuthResponse> ForgotPassword(ForgotPasswordRequest model)
+    {
+        if (string.IsNullOrWhiteSpace(model.Email))
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Email không hợp lệ"
+            };
+        }
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+
+        // Always return success to prevent user enumeration
+        var response = new AuthResponse
+        {
+            success = true,
+            message = "Nếu email tồn tại, hệ thống đã gửi hướng dẫn đặt lại mật khẩu"
+        };
+
+        if (user == null || string.IsNullOrWhiteSpace(user.Email))
+        {
+            return response;
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = EncodeToken(token);
+        var resetLink = TryBuildResetPasswordLink(user.Email, encodedToken);
+
+        var subject = "Reset mật khẩu";
+        var body = resetLink == null
+            ? "Bạn vừa yêu cầu đặt lại mật khẩu. Vui lòng mở trang đặt lại mật khẩu và nhập token được cấp."
+            : $"Bạn vừa yêu cầu đặt lại mật khẩu. Mở link sau để đặt lại: <a href=\"{resetLink}\">Reset password</a>";
+
+        await _emailService.SendAsync(user.Email, subject, body);
+
+        return response;
+    }
+
+    public async Task<AuthResponse> ResetPassword(ResetPasswordRequest model)
+    {
+        if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Token))
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Email hoặc token không hợp lệ"
+            };
+        }
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+
+        if (user == null)
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Token không hợp lệ"
+            };
+        }
+
+        string decodedToken;
+        try
+        {
+            decodedToken = DecodeToken(model.Token);
+        }
+        catch
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Token không hợp lệ"
+            };
+        }
+
+        var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Reset mật khẩu thất bại",
+                errors = result.Errors.Select(e => e.Description)
+            };
+        }
+
+        return new AuthResponse
+        {
+            success = true,
+            message = "Reset mật khẩu thành công"
         };
     }
 }

@@ -11,6 +11,7 @@ using backend.Interfaces;
 using backend.Services;
 using backend.Models.Entities;
 using backend.Hubs;
+using backend.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,6 +89,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<JwtService>();
 // Đăng ký AuthService
 builder.Services.AddScoped<IAuthService, AuthService>();
+// Email options + provider
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
+builder.Services.Configure<SmtpEmailOptions>(builder.Configuration.GetSection("Email:Smtp"));
+builder.Services.AddScoped<SmtpEmailService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 // Đăng ký PostService
 builder.Services.AddScoped<IPostsService, PostsService>();
 // Đăng ký FriendService

@@ -1,75 +1,76 @@
 # ==============================
-
-# Node / React
-
+# Node / React (Vite)
 # ==============================
 
 node_modules/
 build/
 dist/
-.cache/
 coverage/
+.cache/
+.vite/
+.turbo/
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
 # ==============================
-
-# ASP.NET
-
+# ASP.NET / Visual Studio
 # ==============================
 
 bin/
 obj/
+TestResults/
+
 *.user
 *.suo
 *.userprefs
 *.csproj.user
 
-# Rider / VSCode / Visual Studio
-
 .vs/
 .vscode/
 .idea/
 
+# Local config (often contains secrets)
+backend/appsettings.Development.json
+backend/appsettings.Local.json
+backend/appsettings.*.local.json
+
+# Certificates / keys
+*.pfx
+*.snk
+
 # ==============================
-
 # Logs
-
 # ==============================
 
 *.log
 logs/
 
 # ==============================
-
 # OS Files
-
 # ==============================
 
 .DS_Store
 Thumbs.db
 
 # ==============================
-
 # Build output
-
 # ==============================
 
 publish/
 out/
 
 # ==============================
-
 # Temp files
-
 # ==============================
 
 tmp/
@@ -77,9 +78,7 @@ temp/
 *.tmp
 
 # ==============================
-
 # Database local
-
 # ==============================
 
 *.db
@@ -87,9 +86,7 @@ temp/
 *.sqlite3
 
 # ==============================
-
 # Package lock (optional)
-
 # ==============================
 
 package-lock.json
