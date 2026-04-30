@@ -35,9 +35,8 @@ jobs:
       - name: Build project
         run: dotnet build backend/backend.csproj --configuration Release --no-restore
 
-      - name: Run unit tests
-        run: dotnet test backend.Tests/backend.Tests.csproj --configuration Release --no-build
-
+      - name: Run tests
+        run: dotnet test backend.Tests/backend.Tests.csproj --configuration Release
       - name: Publish project
         run: dotnet publish backend/backend.csproj --configuration Release --output ./publish
 
