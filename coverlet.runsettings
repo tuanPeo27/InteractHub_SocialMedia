@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+
+          <!-- Chỉ cover service chính -->
+          <Include>
+            [backend]backend.Services.UserService*,
+            [backend]backend.Services.PostsService*,
+            [backend]backend.Services.AuthService*,
+            [backend]backend.Services.NotificationService*
+          </Include>
+
+          <!-- Loại bỏ phần không cần -->
+          <Exclude>
+            [*.Tests]*,
+            [backend]backend.Migrations*,
+            [backend]backend.Entities*,
+            [backend]backend.DTOs*,
+            [backend]backend.Configurations*,
+            [backend]backend.Program*,
+            [backend]backend.Startup*
+          </Exclude>
+
+          <!-- Loại theo attribute -->
+          <ExcludeByAttribute>
+            Obsolete,
+            GeneratedCodeAttribute,
+            CompilerGeneratedAttribute,
+            ExcludeFromCodeCoverage
+          </ExcludeByAttribute>
+
+          <!-- Loại theo file -->
+          <ExcludeByFile>
+            **/Migrations/*.cs,
+            **/Program.cs,
+            **/Startup.cs
+          </ExcludeByFile>
+
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
