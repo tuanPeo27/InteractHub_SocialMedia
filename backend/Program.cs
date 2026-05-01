@@ -15,29 +15,45 @@ using backend.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DB
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Identity
+// =======================
+// DATABASE
+// =======================
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+// =======================
+// IDENTITY
+// =======================
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
+
+// =======================
 // CORS
+// =======================
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReact",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:5173")
-                .AllowCredentials()
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowReact", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
 
-// JWT 
+
+// =======================
+// JWT AUTHENTICATION
+// =======================
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -53,28 +69,38 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
+
         RoleClaimType = ClaimTypes.Role,
-        ValidIssuer = jwt["Issuer"] ?? throw new Exception("JWT Issuer is not configured."),
-        ValidAudience = jwt["Audience"] ?? throw new Exception("JWT Audience is not configured."),
+
+        ValidIssuer = jwt["Issuer"]
+            ?? throw new Exception("JWT Issuer is not configured."),
+
+        ValidAudience = jwt["Audience"]
+            ?? throw new Exception("JWT Audience is not configured."),
+
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwt["Key"] ?? throw new Exception("JWT Key is not configured.")))
+            Encoding.UTF8.GetBytes(
+                jwt["Key"]
+                ?? throw new Exception("JWT Key is not configured.")
+            ))
     };
 
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
-            // SignalR sends the JWT as a query string param for WebSockets/SSE.
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
 
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notifications"))
+            if (!string.IsNullOrEmpty(accessToken)
+                && path.StartsWithSegments("/hubs/notifications"))
             {
                 context.Token = accessToken;
             }
 
             return Task.CompletedTask;
         },
+
         OnChallenge = context =>
         {
             context.HandleResponse();
@@ -85,54 +111,68 @@ builder.Services.AddAuthentication(options =>
 });
 
 
+// =======================
+// SERVICES
+// =======================
 
-// Đăng ký JwtService
 builder.Services.AddScoped<JwtService>();
-// Đăng ký AuthService
+
 builder.Services.AddScoped<IAuthService, AuthService>();
-// Email options + provider
-builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
-builder.Services.Configure<SmtpEmailOptions>(builder.Configuration.GetSection("Email:Smtp"));
+
+builder.Services.Configure<EmailOptions>(
+    builder.Configuration.GetSection("Email"));
+
+builder.Services.Configure<SmtpEmailOptions>(
+    builder.Configuration.GetSection("Email:Smtp"));
+
 builder.Services.AddScoped<SmtpEmailService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
-// Đăng ký PostService
-builder.Services.AddScoped<IPostsService, PostsService>();
-// Đăng ký FriendService
-builder.Services.AddScoped<IFriendsService, FriendsService>();
-// Đăng ký StoryService
-builder.Services.AddScoped<IStoryService, StoryService>();
-// Đăng ký UserService
-builder.Services.AddScoped<IUserService, UserService>();
-// Đăng ký NotificationService
-builder.Services.AddScoped<INotificationService, NotificationService>();
-// Đăng ký ReportService
-builder.Services.AddScoped<IReportService, ReportService>();
-// Đăng ký LikeService
-builder.Services.AddScoped<ILikeService, LikeService>();
-// Đăng ký AdminService
-builder.Services.AddScoped<IAdminService, AdminService>();
 
-// SignalR (Realtime notifications)
+builder.Services.AddScoped<IPostsService, PostsService>();
+builder.Services.AddScoped<IFriendsService, FriendsService>();
+builder.Services.AddScoped<IStoryService, StoryService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<ILikeService, LikeService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IPrivacyService, PrivacyService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IHashtagService, HashtagService>();
+
+
+// =======================
+// SIGNALR
+// =======================
+
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, SubClaimUserIdProvider>();
 
-// Đăng ký PrivacyService
-builder.Services.AddScoped<IPrivacyService, PrivacyService>();
-// Đăng ký CommentService
-builder.Services.AddScoped<ICommentService, CommentService>();
-// Đăng ký HashtagService
-builder.Services.AddScoped<IHashtagService, HashtagService>();
+
+// =======================
+// CONTROLLERS + SWAGGER
+// =======================
 
 builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "InteractHub API",
+        Version = "v1"
+    });
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Nhập: Bearer {token}",
+        Description = "Nhập Bearer {token}",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
-        Scheme = "bearer"
+        Scheme = "bearer",
+        BearerFormat = "JWT"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -146,34 +186,75 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
 
+
+// =======================
+// BUILD APP
+// =======================
+
 var app = builder.Build();
+
+
+// =======================
+// MIDDLEWARE
+// =======================
 
 app.UseStaticFiles();
 
-// Swagger
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
-//tvan1/5
 app.UseSwagger();
-app.UseSwaggerUI();
+
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "InteractHub API V1");
+    c.RoutePrefix = "swagger";
+});
+
+
+// =======================
+// ROOT ENDPOINT
+// =======================
+
 app.MapGet("/", () => "InteractHub API Running");
+
+
+// =======================
 // CORS
+// =======================
+
 app.UseCors("AllowReact");
 
-// Auth
+
+// =======================
+// AUTH
+// =======================
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+// =======================
+// ROUTES
+// =======================
+
 app.MapControllers();
+
 app.MapHub<NotificationHub>("/hubs/notifications");
-Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
+
+
+// =======================
+// DEBUG CONNECTION STRING
+// =======================
+
+Console.WriteLine(
+    builder.Configuration.GetConnectionString("DefaultConnection"));
+
+
+// =======================
+// RUN APP
+// =======================
 
 app.Run();
