@@ -112,6 +112,7 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const createdComment = await commentsService.create(Number(postId), content);
     const userLookup = new Map(users.map((item) => [item.id, item] as const));
+
     const comment: Comment = {
       id: String(createdComment.id),
       postId: String(createdComment.postId),
