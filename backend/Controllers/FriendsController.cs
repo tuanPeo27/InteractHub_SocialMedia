@@ -53,4 +53,22 @@ public class FriendsController : ControllerBase
         var data = await _service.GetFriends(GetUserId());
         return Ok(data);
     }
+
+    [Authorize]
+    [HttpGet("received")]
+    public async Task<IActionResult> GetReceivedRequests()
+    {
+        var userId = GetUserId();
+        var requests = await _service.GetReceivedRequests(userId);
+        return Ok(requests);
+    }
+
+    [Authorize]
+    [HttpGet("sent")]
+    public async Task<IActionResult> GetSentRequests()
+    {
+        var userId = GetUserId();
+        var requests = await _service.GetSentRequests(userId);
+        return Ok(requests);
+    }
 }
