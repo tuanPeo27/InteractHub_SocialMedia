@@ -54,4 +54,23 @@ public class LikeController : ControllerBase
             return Forbid();
         }
     }
+
+    [HttpGet("{postId}/details")]
+    public async Task<IActionResult> GetDetail(int postId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+
+
+        try
+        {
+            var result = await _service.GetLikeDetail(postId, userId);
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
 }

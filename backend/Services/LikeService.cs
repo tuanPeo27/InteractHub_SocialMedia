@@ -72,4 +72,35 @@ public class LikeService : ILikeService
             IsLiked = isLiked
         };
     }
+
+    public async Task<LikeDetailResponse> GetLikeDetail(int postId, string userId)
+    {
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null)
+            throw new Exception("Post not found");
+
+        // check quyền xem post
+        if (!await _privacyService.CanViewPost(post, userId))
+            throw new UnauthorizedAccessException();
+
+        var likes = await _context.Likes
+            .Where(x => x.PostId == postId)
+            .Include(x => x.User)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync();
+
+        return new LikeDetailResponse
+        {
+            PostId = postId,
+            TotalLikes = likes.Count,
+            IsLikedByCurrentUser = likes.Any(x => x.UserId == userId),
+            Users = likes.Select(x => new LikeUserResponse
+            {
+                UserId = x.UserId,
+                UserName = x.User.UserName,
+                Avatar = x.User.Avatar, // nếu có
+                LikedAt = x.CreatedAt
+            }).ToList()
+        };
+    }
 }
