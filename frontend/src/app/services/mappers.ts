@@ -34,7 +34,9 @@ export const mapAuthUserToUser = (
   createdAt: existingUser?.createdAt || new Date().toISOString(),
 });
 
-export const extractHashtags = (content: string) => {
+export const extractHashtags = (content?: string) => {
+  if (!content) return [];
+
   const matches = content.match(/#(\w+)/g);
   return matches ? matches.map((tag) => tag.slice(1)) : [];
 };
@@ -46,59 +48,78 @@ export const toFrontendPost = (
   likeLookup: Map<number, { PostId: number; TotalLikes: number; IsLiked: boolean }>,
   currentUserId?: string,
 ): Post => {
-  const comments = (commentLookup.get(apiPost.Id) || []).map((comment) => ({
+
+  // đảm bảo id luôn tồn tại
+  const postId = apiPost?.id ?? 0;
+
+  // content safe 
+  const content = apiPost?.content ?? '';
+
+  // COMMENTS
+  const comments = (commentLookup.get(postId) || []).map((comment) => ({
     id: String(comment.Id),
     postId: String(comment.PostId),
     userId: comment.UserId,
-    user: userLookup.get(comment.UserId) || mapApiUserToUser({
-      Id: comment.UserId,
-      UserName: displayNameFromEmail(comment.UserId),
-      Email: `${comment.UserId}@interacthub.local`,
-      FullName: displayNameFromEmail(comment.UserId),
-      Avatar: DEFAULT_AVATAR,
-      Bio: '',
-      DateOfBirth: null,
-    }),
+    user:
+      userLookup.get(comment.UserId) ||
+      mapApiUserToUser({
+        Id: comment.UserId,
+        UserName: displayNameFromEmail(comment.UserId),
+        Email: `${comment.UserId}@interacthub.local`,
+        FullName: displayNameFromEmail(comment.UserId),
+        Avatar: DEFAULT_AVATAR,
+        Bio: '',
+        DateOfBirth: null,
+      }),
     content: comment.Content,
     createdAt: comment.CreatedAt,
   }));
 
-  const likeInfo = likeLookup.get(apiPost.Id);
+  // LIKE
+  const likeInfo = likeLookup.get(postId);
+
   const likes = likeInfo
     ? [
-        ...(likeInfo.IsLiked && currentUserId ? [currentUserId] : []),
-        ...Array.from(
-          { length: Math.max(likeInfo.TotalLikes - (likeInfo.IsLiked && currentUserId ? 1 : 0), 0) },
-          (_, index) => `like-${apiPost.Id}-${index}`,
-        ),
-      ]
+      ...(likeInfo.IsLiked && currentUserId ? [currentUserId] : []),
+      ...Array.from(
+        {
+          length: Math.max(
+            likeInfo.TotalLikes - (likeInfo.IsLiked && currentUserId ? 1 : 0),
+            0
+          ),
+        },
+        (_, index) => `like-${postId}-${index}`,
+      ),
+    ]
     : [];
 
-  const user = userLookup.get(apiPost.UserId) || mapApiUserToUser({
-    Id: apiPost.UserId,
-    UserName: displayNameFromEmail(apiPost.UserId),
-    Email: `${apiPost.UserId}@interacthub.local`,
-    FullName: displayNameFromEmail(apiPost.UserId),
-    Avatar: DEFAULT_AVATAR,
-    Bio: '',
-    DateOfBirth: null,
-  });
+  // USER
+  const user =
+    userLookup.get(apiPost.userId) ||
+    mapApiUserToUser({
+      Id: apiPost.userId,
+      UserName: displayNameFromEmail(apiPost.userId),
+      Email: `${apiPost.userId}@interacthub.local`,
+      FullName: displayNameFromEmail(apiPost.userId),
+      Avatar: DEFAULT_AVATAR,
+      Bio: '',
+      DateOfBirth: null,
+    });
 
   return {
-    id: String(apiPost.Id),
-    userId: apiPost.UserId,
+    id: String(postId),
+    userId: apiPost.userId,
     user,
-    content: apiPost.Content,
-    images: apiPost.ImageUrl ? [apiPost.ImageUrl] : [],
+    content,
+    images: apiPost.imageUrl ? [apiPost.imageUrl] : [],
     likes,
     comments,
     shares: 0,
-    hashtags: extractHashtags(apiPost.Content),
-    createdAt: apiPost.CreatedAt,
-    updatedAt: apiPost.UpdatedAt,
+    hashtags: extractHashtags(content), // đã safe
+    createdAt: apiPost.createdAt ?? new Date().toISOString(),
+    updatedAt: apiPost.updatedAt ?? new Date().toISOString(),
   };
 };
-
 export const toFrontendStory = (apiStory: ApiStory, userLookup: Map<string, User>): Story => ({
   id: String(apiStory.Id),
   userId: apiStory.UserId,

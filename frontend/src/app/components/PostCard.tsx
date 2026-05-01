@@ -31,7 +31,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
 
   const isLiked = user ? post.likes.includes(user.id) : false;
   const isOwnPost = user?.id === post.userId;
-
   const handleLike = () => {
     if (isLiked) {
       unlikePost(post.id);
@@ -135,9 +134,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
           <div className={cn(
             "grid gap-2 rounded-lg overflow-hidden",
             post.images.length === 1 ? "grid-cols-1" :
-            post.images.length === 2 ? "grid-cols-2" :
-            post.images.length === 3 ? "grid-cols-2" :
-            "grid-cols-2"
+              post.images.length === 2 ? "grid-cols-2" :
+                post.images.length === 3 ? "grid-cols-2" :
+                  "grid-cols-2"
           )}>
             {post.images.map((image, index) => (
               <img

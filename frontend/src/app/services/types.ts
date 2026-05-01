@@ -25,12 +25,12 @@ export interface ApiUser {
 }
 
 export interface ApiPost {
-  Id: number;
-  Content: string;
-  ImageUrl?: string | null;
-  UserId: string;
-  CreatedAt: string;
-  UpdatedAt: string;
+  id: number;
+  content: string;
+  imageUrl?: string | null;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ApiStory {
