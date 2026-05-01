@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using backend.Interfaces;
 using backend.Models.Entities;
 using backend.DTOs.Response;
+using backend.DTOs.Request;
 
 namespace backend.Services;
 
@@ -9,11 +10,13 @@ public class LikeService : ILikeService
 {
     private readonly AppDbContext _context;
     private readonly IPrivacyService _privacyService;
+    private readonly INotificationService _notificationService;
 
-    public LikeService(AppDbContext context, IPrivacyService privacyService)
+    public LikeService(AppDbContext context, IPrivacyService privacyService, INotificationService notificationService)
     {
         _context = context;
         _privacyService = privacyService;
+        _notificationService = notificationService;
     }
 
     public async Task<bool> ToggleLike(int postId, string userId)
@@ -45,6 +48,20 @@ public class LikeService : ILikeService
 
         _context.Likes.Add(like);
         await _context.SaveChangesAsync();
+
+        // Create notification for the post owner (only if the liker is not the post owner)
+        if (post.UserId != userId)
+        {
+            var likerUser = await _context.Users.FindAsync(userId);
+            var notificationRequest = new CreateNotificationRequest
+            {
+                UserId = post.UserId,
+                FromUserId = userId,
+                Content = $"{likerUser?.FullName ?? likerUser?.UserName} đã like bài viết của bạn",
+                Type = "like"
+            };
+            await _notificationService.Create(notificationRequest);
+        }
 
         return true;
     }

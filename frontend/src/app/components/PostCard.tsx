@@ -51,9 +51,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
   };
 
 
-  const handleDelete = () => {
-    deletePost(post.id);
-    toast.success('Đã xóa bài viết!');
+  const handleDelete = async () => {
+    try {
+      await deletePost(post.id);
+      toast.success('Đã xóa bài viết!');
+    } catch {
+      toast.error('Xóa bài viết thất bại!');
+    }
   };
 
   const handleReport = () => {
@@ -121,7 +125,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
                     <>
                       <button
                         onClick={() => {
-                          handleDelete();
+                          void handleDelete();
                           setShowMenu(false);
                         }}
                         className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-t-lg transition-colors flex items-center"

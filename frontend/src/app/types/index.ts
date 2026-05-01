@@ -48,6 +48,7 @@ export interface Notification {
   fromUser: User;
   type: 'like' | 'comment' | 'friend_request' | 'friend_accept' | 'share';
   postId?: string;
+  url?: string;
   message: string;
   read: boolean;
   createdAt: string;

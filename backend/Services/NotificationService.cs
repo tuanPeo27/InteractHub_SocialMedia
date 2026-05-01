@@ -29,6 +29,8 @@ public class NotificationService : INotificationService
             CreatedAt = n.CreatedAt,
             FromUserId = n.FromUserId ?? "",
             FromUserName = n.FromUser != null ? n.FromUser.UserName : null,
+            FromUserFullName = n.FromUser != null ? n.FromUser.FullName : null,
+            FromUserAvatar = n.FromUser != null ? n.FromUser.Avatar : null,
             Type = n.Type
         };
     }
@@ -69,6 +71,8 @@ public class NotificationService : INotificationService
                 CreatedAt = n.CreatedAt,
                 FromUserId = n.FromUserId,
                 FromUserName = n.FromUser != null ? n.FromUser.UserName : null,
+                FromUserFullName = n.FromUser != null ? n.FromUser.FullName : null,
+                FromUserAvatar = n.FromUser != null ? n.FromUser.Avatar : null,
                 Type = n.Type
             })
             .ToListAsync();
@@ -102,5 +106,29 @@ public class NotificationService : INotificationService
         await _hub.Clients.User(userId).NotificationDeleted(id);
 
         return true;
+    }
+
+    public async Task<int> DeleteAll(string userId)
+    {
+        var notifications = await _context.Notifications
+            .Where(n => n.UserId == userId)
+            .ToListAsync();
+
+        if (notifications.Count == 0)
+        {
+            return 0;
+        }
+
+        var notificationIds = notifications.Select(n => n.Id).ToList();
+
+        _context.Notifications.RemoveRange(notifications);
+        await _context.SaveChangesAsync();
+
+        foreach (var notificationId in notificationIds)
+        {
+            await _hub.Clients.User(userId).NotificationDeleted(notificationId);
+        }
+
+        return notificationIds.Count;
     }
 }

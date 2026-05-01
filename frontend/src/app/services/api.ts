@@ -25,5 +25,6 @@ export { friendsService } from './friendsService';
 export { likesService } from './likesService';
 export { notificationsService } from './notificationsService';
 export { postsService } from './postsService';
+export { signalRService } from './signalRService';
 export { storiesService } from './storiesService';
 export { usersService } from './usersService';

@@ -12,10 +12,12 @@ namespace backend.Services;
 public class FriendsService : IFriendsService
 {
     private readonly AppDbContext _context;
+    private readonly INotificationService _notificationService;
 
-    public FriendsService(AppDbContext context)
+    public FriendsService(AppDbContext context, INotificationService notificationService)
     {
         _context = context;
+        _notificationService = notificationService;
     }
 
     public async Task SendRequest(string senderId, string receiverId)
@@ -41,6 +43,17 @@ public class FriendsService : IFriendsService
 
         _context.FriendShips.Add(request);
         await _context.SaveChangesAsync();
+
+        // Create notification for the receiver
+        var senderUser = await _context.Users.FindAsync(senderId);
+        var notificationRequest = new CreateNotificationRequest
+        {
+            UserId = receiverId,
+            FromUserId = senderId,
+            Content = $"{senderUser?.FullName ?? senderUser?.UserName} đã gửi cho bạn một lời mời kết bạn",
+            Type = "friend_request"
+        };
+        await _notificationService.Create(notificationRequest);
     }
 
     public async Task AcceptRequest(int requestId, string userId)
@@ -52,6 +65,17 @@ public class FriendsService : IFriendsService
 
         request.Status = FriendStatus.Accepted;
         await _context.SaveChangesAsync();
+
+        // Create notification for the sender that the request was accepted
+        var receiverUser = await _context.Users.FindAsync(userId);
+        var notificationRequest = new CreateNotificationRequest
+        {
+            UserId = request.SenderId,
+            FromUserId = userId,
+            Content = $"{receiverUser?.FullName ?? receiverUser?.UserName} đã chấp nhận lời mời kết bạn của bạn",
+            Type = "friend_accept"
+        };
+        await _notificationService.Create(notificationRequest);
     }
 
     public async Task RejectRequest(int requestId, string userId)
