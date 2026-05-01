@@ -156,11 +156,15 @@ var app = builder.Build();
 app.UseStaticFiles();
 
 // Swagger
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
+//tvan1/5
+app.UseSwagger();
+app.UseSwaggerUI();
+app.MapGet("/", () => "InteractHub API Running");
 // CORS
 app.UseCors("AllowReact");
 
