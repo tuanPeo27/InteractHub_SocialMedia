@@ -27,7 +27,6 @@ export const signalRService = {
         .build();
 
       await connection.start();
-      console.log('SignalR connected successfully');
       return connection;
     } catch (error) {
       console.error('SignalR connection error:', error);
@@ -39,7 +38,6 @@ export const signalRService = {
     if (connection) {
       try {
         await connection.stop();
-        console.log('SignalR disconnected');
       } catch (error) {
         console.error('SignalR disconnection error:', error);
       }

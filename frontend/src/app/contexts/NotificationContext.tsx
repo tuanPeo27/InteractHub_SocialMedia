@@ -40,21 +40,16 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   useEffect(() => {
     const loadNotifications = async () => {
       if (!user) {
-        console.log('No user, clearing notifications');
         setNotifications([]);
         return;
       }
 
       try {
-        console.log('Loading notifications for user:', user.id);
         const apiNotifications = await notificationsService.getAll();
-        console.log('Loaded notifications:', apiNotifications);
         
         const userLookup = new Map(users.map((item) => [item.id, item] as const));
         const convertedNotifications = apiNotifications.map((notification) => {
-          const converted = toFrontendNotification(notification, userLookup);
-          console.log('Converted notification:', converted);
-          return converted;
+          return toFrontendNotification(notification, userLookup);
         });
         setNotifications(mergeNotificationsById(convertedNotifications));
       } catch (error) {
@@ -76,19 +71,14 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     const setupSignalR = async () => {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5052';
       const hubUrl = `${apiUrl}/hubs/notifications`;
-      
-      console.log('Connecting to SignalR hub:', hubUrl);
+
       const connection = await signalRService.connect(hubUrl);
       
       if (connection) {
-        console.log('SignalR connection established');
-        
         // Listen for new notifications
         signalRService.onNotificationCreated((notification) => {
-          console.log('New notification received:', notification);
           const userLookup = new Map(users.map((item) => [item.id, item] as const));
           const frontendNotification = toFrontendNotification(notification, userLookup);
-          console.log('Converted notification:', frontendNotification);
           setNotifications((prev) => {
             const next = [frontendNotification, ...prev.filter((item) => item.id !== frontendNotification.id)];
             return mergeNotificationsById(next);
@@ -97,7 +87,6 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
         // Listen for read notifications
         signalRService.onNotificationRead((notificationId) => {
-          console.log('Notification read:', notificationId);
           setNotifications((prev) =>
             prev.map((n) => (n.id === String(notificationId) ? { ...n, read: true } : n))
           );
@@ -105,7 +94,6 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
         // Listen for deleted notifications
         signalRService.onNotificationDeleted((notificationId) => {
-          console.log('Notification deleted:', notificationId);
           setNotifications((prev) => prev.filter((n) => n.id !== String(notificationId)));
         });
       } else {
