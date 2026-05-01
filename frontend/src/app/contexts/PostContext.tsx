@@ -1,17 +1,22 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Post, Comment } from '../types';
-import { mockPosts } from '../data/mockData';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { Comment, Post } from '../types';
 import { useAuth } from './AuthContext';
+import { useUsers } from './UsersContext';
+import { commentsService } from '../services/commentsService';
+import { likesService } from '../services/likesService';
+import { postsService } from '../services/postsService';
+import { toFrontendPost } from '../services/mappers';
+import type { ApiComment, ApiLikeInfo } from '../services/types';
 
 interface PostContextType {
   posts: Post[];
   loading: boolean;
-  createPost: (content: string, images: string[], hashtags: string[]) => void;
-  likePost: (postId: string) => void;
-  unlikePost: (postId: string) => void;
-  addComment: (postId: string, content: string) => void;
+  createPost: (content: string, images: string[], hashtags: string[]) => Promise<void>;
+  likePost: (postId: string) => Promise<void>;
+  unlikePost: (postId: string) => Promise<void>;
+  addComment: (postId: string, content: string) => Promise<void>;
   sharePost: (postId: string) => void;
-  deletePost: (postId: string) => void;
+  deletePost: (postId: string) => Promise<void>;
   getPostById: (postId: string) => Post | undefined;
   getPostsByHashtag: (hashtag: string) => Post[];
   searchPosts: (query: string) => Post[];
@@ -23,118 +28,135 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { users, loading: usersLoading } = useUsers();
 
   useEffect(() => {
-    // Load posts from localStorage or use mock data
-    const savedPosts = localStorage.getItem('posts');
-    if (savedPosts) {
-      setPosts(JSON.parse(savedPosts));
-    } else {
-      setPosts(mockPosts);
-      localStorage.setItem('posts', JSON.stringify(mockPosts));
-    }
-    setLoading(false);
-  }, []);
+    const loadPosts = async () => {
+      if (usersLoading) {
+        return;
+      }
 
-  useEffect(() => {
-    // Save posts to localStorage whenever they change
-    if (!loading) {
-      localStorage.setItem('posts', JSON.stringify(posts));
-    }
-  }, [posts, loading]);
+      setLoading(true);
 
-  const createPost = (content: string, images: string[], hashtags: string[]) => {
-    if (!user) return;
+      try {
+        const apiPosts = await postsService.getFeed();
+        const details = await Promise.all(
+          apiPosts.map(async (post) => ({
+            post,
+            comments: await commentsService.getByPost(String(post.Id)).catch(() => [] as ApiComment[]),
+            likeInfo: await likesService.getInfo(String(post.Id)).catch(() => null as ApiLikeInfo | null),
+          })),
+        );
 
-    const newPost: Post = {
-      id: `p${Date.now()}`,
-      userId: user.id,
-      user: user,
-      content,
-      images,
-      likes: [],
-      comments: [],
-      shares: 0,
-      hashtags,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+        const userLookup = new Map(users.map((item) => [item.id, item] as const));
+        const commentLookup = new Map<number, ApiComment[]>();
+        const likeLookup = new Map<number, ApiLikeInfo>();
+
+        details.forEach((detail) => {
+          commentLookup.set(detail.post.Id, detail.comments);
+          if (detail.likeInfo) {
+            likeLookup.set(detail.post.Id, detail.likeInfo);
+          }
+        });
+
+        setPosts(apiPosts.map((post) => toFrontendPost(post, userLookup, commentLookup, likeLookup, user?.id)));
+      } catch {
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setPosts([newPost, ...posts]);
-  };
+    void loadPosts();
+  }, [user?.id, users.length, usersLoading]);
 
-  const likePost = (postId: string) => {
+  const createPost = async (content: string, images: string[], hashtags: string[]) => {
     if (!user) return;
 
-    setPosts(posts.map(post => {
-      if (post.id === postId && !post.likes.includes(user.id)) {
-        return { ...post, likes: [...post.likes, user.id] };
+    const imageUrl = images[0] || null;
+    const serverContent = hashtags.length > 0 ? `${content} ${hashtags.map((tag) => `#${tag}`).join(' ')}` : content;
+    const createdPost = await postsService.create(serverContent, imageUrl);
+    const userLookup = new Map(users.map((item) => [item.id, item] as const));
+    const nextPost = toFrontendPost(createdPost, userLookup, new Map<number, ApiComment[]>(), new Map<number, ApiLikeInfo>(), user.id);
+
+    setPosts((current) => [nextPost, ...current]);
+  };
+
+  const likePost = async (postId: string) => {
+    if (!user) return;
+
+    await likesService.toggle(postId);
+    const likeInfo = await likesService.getInfo(postId);
+
+    setPosts((current) => current.map((post) => {
+      if (post.id !== postId) {
+        return post;
       }
-      return post;
+
+      const likes = likeInfo.IsLiked
+        ? [user.id, ...Array.from({ length: Math.max(likeInfo.TotalLikes - 1, 0) }, (_, index) => `like-${postId}-${index}`)]
+        : Array.from({ length: likeInfo.TotalLikes }, (_, index) => `like-${postId}-${index}`);
+
+      return { ...post, likes };
     }));
   };
 
-  const unlikePost = (postId: string) => {
-    if (!user) return;
-
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return { ...post, likes: post.likes.filter(id => id !== user.id) };
-      }
-      return post;
-    }));
+  const unlikePost = async (postId: string) => {
+    await likePost(postId);
   };
 
-  const addComment = (postId: string, content: string) => {
+  const addComment = async (postId: string, content: string) => {
     if (!user) return;
 
-    const newComment: Comment = {
-      id: `c${Date.now()}`,
-      postId,
-      userId: user.id,
-      user: user,
-      content,
-      createdAt: new Date().toISOString(),
+    const createdComment = await commentsService.create(Number(postId), content);
+    const userLookup = new Map(users.map((item) => [item.id, item] as const));
+    const comment: Comment = {
+      id: String(createdComment.Id),
+      postId: String(createdComment.PostId),
+      userId: createdComment.UserId,
+      user: userLookup.get(createdComment.UserId) || user,
+      content: createdComment.Content,
+      createdAt: createdComment.CreatedAt,
     };
 
-    setPosts(posts.map(post => {
+    setPosts((current) => current.map((post) => {
       if (post.id === postId) {
-        return { ...post, comments: [...post.comments, newComment] };
+        return { ...post, comments: [comment, ...post.comments] };
       }
+
       return post;
     }));
   };
 
   const sharePost = (postId: string) => {
-    setPosts(posts.map(post => {
+    setPosts((current) => current.map((post) => {
       if (post.id === postId) {
         return { ...post, shares: post.shares + 1 };
       }
+
       return post;
     }));
   };
 
-  const deletePost = (postId: string) => {
-    setPosts(posts.filter(post => post.id !== postId));
+  const deletePost = async (postId: string) => {
+    await postsService.delete(postId);
+    setPosts((current) => current.filter((post) => post.id !== postId));
   };
 
-  const getPostById = (postId: string) => {
-    return posts.find(post => post.id === postId);
-  };
+  const getPostById = (postId: string) => posts.find((post) => post.id === postId);
 
-  const getPostsByHashtag = (hashtag: string) => {
-    return posts.filter(post => 
-      post.hashtags.some(tag => tag.toLowerCase() === hashtag.toLowerCase())
-    );
-  };
+  const getPostsByHashtag = (hashtag: string) => posts.filter((post) =>
+    post.hashtags.some((tag) => tag.toLowerCase() === hashtag.toLowerCase()),
+  );
 
   const searchPosts = (query: string) => {
     const lowerQuery = query.toLowerCase();
-    return posts.filter(post =>
+
+    return posts.filter((post) =>
       post.content.toLowerCase().includes(lowerQuery) ||
       post.user.fullName.toLowerCase().includes(lowerQuery) ||
       post.user.username.toLowerCase().includes(lowerQuery) ||
-      post.hashtags.some(tag => tag.toLowerCase().includes(lowerQuery))
+      post.hashtags.some((tag) => tag.toLowerCase().includes(lowerQuery)),
     );
   };
 
@@ -161,8 +183,10 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const usePosts = () => {
   const context = useContext(PostContext);
+
   if (!context) {
     throw new Error('usePosts must be used within PostProvider');
   }
+
   return context;
 };

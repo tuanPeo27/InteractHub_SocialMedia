@@ -1,4 +1,5 @@
 import { RouterProvider } from 'react-router';
+import { UsersProvider } from './contexts/UsersContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { PostProvider } from './contexts/PostContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -8,16 +9,18 @@ import { router } from './routes';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <PostProvider>
-        <NotificationProvider>
-          <StoryProvider>
-            <FriendProvider>
-              <RouterProvider router={router} />
-            </FriendProvider>
-          </StoryProvider>
-        </NotificationProvider>
-      </PostProvider>
-    </AuthProvider>
+    <UsersProvider>
+      <AuthProvider>
+        <PostProvider>
+          <NotificationProvider>
+            <StoryProvider>
+              <FriendProvider>
+                <RouterProvider router={router} />
+              </FriendProvider>
+            </StoryProvider>
+          </NotificationProvider>
+        </PostProvider>
+      </AuthProvider>
+    </UsersProvider>
   );
 }

@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Story } from '../types';
-import { mockStories } from '../data/mockData';
 import { useAuth } from './AuthContext';
+import { useUsers } from './UsersContext';
+import { storiesService } from '../services/storiesService';
+import { toFrontendStory } from '../services/mappers';
 
 interface StoryContextType {
   stories: Story[];
@@ -16,34 +18,28 @@ const StoryContext = createContext<StoryContextType | undefined>(undefined);
 export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [stories, setStories] = useState<Story[]>([]);
   const { user } = useAuth();
+  const { users, loading: usersLoading } = useUsers();
 
   useEffect(() => {
-    // Load stories from localStorage or use mock data
-    const savedStories = localStorage.getItem('stories');
-    if (savedStories) {
-      setStories(JSON.parse(savedStories));
-    } else {
-      setStories(mockStories);
-      localStorage.setItem('stories', JSON.stringify(mockStories));
-    }
-  }, []);
+    const loadStories = async () => {
+      if (!user || usersLoading) {
+        setStories([]);
+        return;
+      }
 
-  useEffect(() => {
-    // Save stories and clean up expired ones
-    const activeStories = stories.filter(story => 
-      new Date(story.expiresAt) > new Date()
-    );
-    
-    if (activeStories.length !== stories.length) {
-      setStories(activeStories);
-    }
-    
-    if (stories.length > 0) {
-      localStorage.setItem('stories', JSON.stringify(stories));
-    }
-  }, [stories]);
+      try {
+        const apiStories = await storiesService.getFeed();
+        const userLookup = new Map(users.map((item) => [item.id, item] as const));
+        setStories(apiStories.map((story) => toFrontendStory(story, userLookup)));
+      } catch {
+        setStories([]);
+      }
+    };
 
-  const createStory = (image: string) => {
+    void loadStories();
+  }, [user, usersLoading, users.length]);
+
+  const createStory = async (image: string) => {
     if (!user) return;
 
     const now = new Date();
@@ -59,6 +55,7 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       views: [],
     };
 
+    await storiesService.create(image);
     setStories([newStory, ...stories]);
   };
 
@@ -73,7 +70,8 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }));
   };
 
-  const deleteStory = (storyId: string) => {
+  const deleteStory = async (storyId: string) => {
+    await storiesService.delete(storyId);
     setStories(stories.filter(story => story.id !== storyId));
   };
 

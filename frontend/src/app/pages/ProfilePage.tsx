@@ -6,7 +6,7 @@ import { vi } from 'date-fns/locale';
 import { useAuth } from '../contexts/AuthContext';
 import { usePosts } from '../contexts/PostContext';
 import { useFriends } from '../contexts/FriendContext';
-import { mockUsers } from '../data/mockData';
+import { useUsers } from '../contexts/UsersContext';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
@@ -20,17 +20,18 @@ const ProfilePage: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { posts } = usePosts();
   const { friends, isFriend, sendFriendRequest, removeFriend, hasPendingRequest } = useFriends();
+  const { users } = useUsers();
   const [showEditProfile, setShowEditProfile] = useState(false);
 
   // If no userId, show current user's profile
   const profileUserId = userId || currentUser?.id;
-  const profileUser = mockUsers.find(u => u.id === profileUserId) || currentUser;
+  const profileUser = users.find(u => u.id === profileUserId) || currentUser;
   const isOwnProfile = currentUser?.id === profileUserId;
 
   const userPosts = posts.filter(p => p.userId === profileUserId);
   const userFriends = isOwnProfile ? friends : [];
 
-  const handleFriendAction = () => {
+  const handleFriendAction = async () => {
     if (!profileUser) return;
 
     if (isFriend(profileUser.id)) {
@@ -39,7 +40,7 @@ const ProfilePage: React.FC = () => {
     } else if (hasPendingRequest(profileUser.id)) {
       toast.info('Đã gửi lời mời kết bạn trước đó!');
     } else {
-      sendFriendRequest(profileUser.id);
+      await sendFriendRequest(profileUser.id);
       toast.success('Đã gửi lời mời kết bạn!');
     }
   };

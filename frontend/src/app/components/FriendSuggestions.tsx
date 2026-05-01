@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { UserPlus } from 'lucide-react';
-import { mockUsers } from '../data/mockData';
 import { useAuth } from '../contexts/AuthContext';
 import { useFriends } from '../contexts/FriendContext';
+import { useUsers } from '../contexts/UsersContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -12,13 +12,14 @@ import { toast } from 'sonner';
 const FriendSuggestions: React.FC = () => {
   const { user } = useAuth();
   const { friends, sendFriendRequest, hasPendingRequest } = useFriends();
+  const { users } = useUsers();
 
-  const suggestions = mockUsers
+  const suggestions = users
     .filter(u => u.id !== user?.id && !friends.some(f => f.id === u.id))
     .slice(0, 5);
 
-  const handleSendRequest = (userId: string) => {
-    sendFriendRequest(userId);
+  const handleSendRequest = async (userId: string) => {
+    await sendFriendRequest(userId);
     toast.success('Đã gửi lời mời kết bạn!');
   };
 

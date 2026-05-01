@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm<LoginForm>();
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
 
   const onSubmit = async (data: LoginForm) => {
     setLoading(true);
@@ -35,11 +35,6 @@ const LoginPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemoAccount = (email: string) => {
-    setValue('email', email);
-    setValue('password', 'demo123');
   };
 
   return (
@@ -93,39 +88,6 @@ const LoginPage: React.FC = () => {
               </Button>
             </form>
 
-            {/* Demo accounts */}
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm font-medium mb-2">Tài khoản demo:</p>
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('nguyenvana@example.com')}
-                  className="w-full text-left px-3 py-2 bg-white rounded-md hover:bg-blue-100 transition-colors text-sm"
-                >
-                  <span className="font-medium">Nguyễn Văn A</span>
-                  <br />
-                  <span className="text-xs text-gray-600">nguyenvana@example.com</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('tranthib@example.com')}
-                  className="w-full text-left px-3 py-2 bg-white rounded-md hover:bg-blue-100 transition-colors text-sm"
-                >
-                  <span className="font-medium">Trần Thị B</span>
-                  <br />
-                  <span className="text-xs text-gray-600">tranthib@example.com</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('admin@interacthub.com')}
-                  className="w-full text-left px-3 py-2 bg-white rounded-md hover:bg-blue-100 transition-colors text-sm"
-                >
-                  <span className="font-medium">Admin</span>
-                  <br />
-                  <span className="text-xs text-gray-600">admin@interacthub.com</span>
-                </button>
-              </div>
-            </div>
           </CardContent>
           <CardFooter className="flex-col gap-2">
             <p className="text-sm text-gray-600">

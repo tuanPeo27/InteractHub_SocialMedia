@@ -2,10 +2,23 @@ import React from 'react';
 import { Link } from 'react-router';
 import { Hash, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { getTrendingHashtags } from '../data/mockData';
+import { usePosts } from '../contexts/PostContext';
 
 const TrendingHashtags: React.FC = () => {
-  const trendingHashtags = getTrendingHashtags();
+  const { posts } = usePosts();
+
+  const hashtagCounts = posts.reduce((acc, post) => {
+    post.hashtags.forEach((tag) => {
+      acc[tag] = (acc[tag] || 0) + 1;
+    });
+
+    return acc;
+  }, {} as Record<string, number>);
+
+  const trendingHashtags = Object.entries(hashtagCounts)
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
 
   return (
     <Card>
@@ -16,7 +29,7 @@ const TrendingHashtags: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {trendingHashtags.map((item, index) => (
+        {trendingHashtags.length > 0 ? trendingHashtags.map((item, index) => (
           <Link
             key={item.tag}
             to={`/hashtag/${item.tag}`}
@@ -33,7 +46,7 @@ const TrendingHashtags: React.FC = () => {
               <span className="text-sm font-medium text-gray-400">#{index + 1}</span>
             </div>
           </Link>
-        ))}
+        )) : <p className="text-sm text-gray-500">Chưa có hashtag nào</p>}
       </CardContent>
     </Card>
   );
