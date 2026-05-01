@@ -13,9 +13,31 @@ export const authService = {
     return response.data;
   },
 
-  async register(email: string, password: string) {
-    const response = await apiClient.post<ApiAuthResult>('/Auth/register', { email, password });
+  async register(email: string, password: string, userName?: string, fullName?: string) {
+    const response = await apiClient.post<ApiAuthResult>('/Auth/register', {
+      email,
+      password,
+      userName,
+      fullName,
+    });
     return response.data;
+  },    
+
+  async logout() {
+    await apiClient.post('/Auth/logout');
+    clearAuthSession();
+  },
+
+  async forgotPassword(email: string) {
+    await apiClient.post('/Auth/forgot-password', { email });
+  },
+
+  async resetPassword(email: string, token: string, newPassword: string) {
+    await apiClient.post('/Auth/reset-password', { email, token, newPassword });
+  },
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    await apiClient.post('/Auth/change-password', { currentPassword, newPassword });
   },
 
   async getCurrentUser() {

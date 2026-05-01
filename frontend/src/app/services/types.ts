@@ -1,4 +1,12 @@
-import { Comment, FriendRequest, Notification, Post, Story, User, FriendRequestStatus } from '../types';
+import {
+  Comment,
+  FriendRequest,
+  Notification,
+  Post,
+  Story,
+  User,
+  FriendRequestStatus
+} from "../types";
 
 export interface ApiAuthResult {
   success: boolean;
@@ -25,49 +33,49 @@ export interface ApiUser {
 }
 
 export interface ApiPost {
-  Id: number;
-  Content: string;
-  ImageUrl?: string | null;
-  UserId: string;
-  CreatedAt: string;
-  UpdatedAt: string;
+  id: number;
+  content: string;
+  imageUrl?: string | null;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ApiStory {
-  Id: number;
-  ImageUrl: string;
-  UserId: string;
-  CreatedAt: string;
+  id: number;
+  imageUrl: string;
+  userId: string;
+  createdAt: string;
 }
 
 export interface ApiNotification {
-  Id: number;
-  Content: string;
-  IsRead: boolean;
-  CreatedAt: string;
-  FromUserId?: string | null;
-  FromUserName?: string | null;
-  Type?: string | null;
+  id: number;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+  fromUserId?: string | null;
+  fromUserName?: string | null;
+  type?: string | null;
 }
 
 export interface ApiComment {
-  Id: number;
-  Content: string;
-  UserId: string;
-  PostId: number;
-  CreatedAt: string;
+  id: number;
+  content: string;
+  userId: string;
+  postId: number;
+  createdAt: string;
 }
 
 export interface ApiLikeInfo {
-  PostId: number;
-  TotalLikes: number;
-  IsLiked: boolean;
+  postId: number;
+  totalLikes: number;
+  isLiked: boolean;
 }
 
 export interface ApiFriendship {
-  Id: number;
-  SenderId: string;
-  ReceiverId: string;
+  id: number;
+  senderId: string;
+  receiverId: string;
   Status: FriendRequestStatus;
 }
 

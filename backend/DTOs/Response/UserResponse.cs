@@ -10,4 +10,5 @@ public class UserResponse
     public string? Avatar { get; set; }
     public string? Bio { get; set; }
     public DateTime? DateOfBirth { get; set; }
+    public string? PhoneNumber { get; set; }
 }

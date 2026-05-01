@@ -30,7 +30,12 @@ public class UserService : IUserService
         {
             Id = currentUser.Id,
             UserName = currentUser.UserName ?? "",
-            Email = currentUser.Email ?? ""
+            Email = currentUser.Email ?? "",
+            FullName = currentUser.FullName,
+            Avatar = currentUser.Avatar,
+            Bio = currentUser.Bio,
+            DateOfBirth = currentUser.DateOfBirth,
+            PhoneNumber = currentUser.PhoneNumber
         };
     }
 
@@ -40,7 +45,12 @@ public class UserService : IUserService
         {
             Id = u.Id,
             UserName = u.UserName ?? "",
-            Email = u.Email ?? ""
+            Email = u.Email ?? "",
+            FullName = u.FullName,
+            Avatar = u.Avatar,
+            Bio = u.Bio,
+            DateOfBirth = u.DateOfBirth,
+            PhoneNumber = u.PhoneNumber
         }).ToList();
     }
 
@@ -54,7 +64,12 @@ public class UserService : IUserService
         {
             Id = user.Id,
             UserName = user.UserName ?? "",
-            Email = user.Email ?? ""
+            Email = user.Email ?? "",
+            FullName = user.FullName,
+            Avatar = user.Avatar,
+            Bio = user.Bio,
+            DateOfBirth = user.DateOfBirth,
+            PhoneNumber = user.PhoneNumber
         };
     }
 
@@ -93,6 +108,9 @@ public class UserService : IUserService
 
         if (model.DateOfBirth.HasValue)
             currentUser.DateOfBirth = model.DateOfBirth.Value;
+
+        if (!string.IsNullOrEmpty(model.PhoneNumber))
+            currentUser.PhoneNumber = model.PhoneNumber;
 
         var result = await _userManager.UpdateAsync(currentUser);
 

@@ -30,7 +30,9 @@ export const mapAuthUserToUser = (
   createdAt: existingUser?.createdAt || new Date().toISOString(),
 });
 
-export const extractHashtags = (content: string) => {
+export const extractHashtags = (content?: string) => {
+  if (!content) return [];
+
   const matches = content.match(/#(\w+)/g);
   return matches ? matches.map((tag) => tag.slice(1)) : [];
 };
@@ -39,114 +41,113 @@ export const toFrontendPost = (
   apiPost: ApiPost,
   userLookup: Map<string, User>,
   commentLookup: Map<number, ApiComment[]>,
-  likeLookup: Map<number, { PostId: number; TotalLikes: number; IsLiked: boolean }>,
+  likeLookup: Map<number, { postId: number; totalLikes: number; isLiked: boolean }>,
   currentUserId?: string,
 ): Post => {
-  const comments = (commentLookup.get(apiPost.Id) || []).map((comment) => ({
-    id: String(comment.Id),
-    postId: String(comment.PostId),
-    userId: comment.UserId,
-    user: userLookup.get(comment.UserId) || mapApiUserToUser({
-      id: comment.UserId,
-      userName: displayNameFromEmail(comment.UserId),
-      email: `${comment.UserId}@interacthub.local`,
-      fullName: displayNameFromEmail(comment.UserId),
+  const comments = (commentLookup.get(apiPost.id) || []).map((comment) => ({
+    id: String(comment.id),
+    postId: String(comment.postId),
+    userId: comment.userId,
+    user: userLookup.get(comment.userId) || mapApiUserToUser({
+      id: comment.userId,
+      userName: displayNameFromEmail(comment.userId),
+      email: `${comment.userId}@interacthub.local`,
+      fullName: displayNameFromEmail(comment.userId),
       avatar: DEFAULT_AVATAR,
       bio: '',
       dateOfBirth: null,
     }),
-    content: comment.Content,
-    createdAt: comment.CreatedAt,
+    content: comment.content,
+    createdAt: comment.createdAt,
   }));
 
-  const likeInfo = likeLookup.get(apiPost.Id);
+  const likeInfo = likeLookup.get(apiPost.id);
   const likes = likeInfo
     ? [
-        ...(likeInfo.IsLiked && currentUserId ? [currentUserId] : []),
+        ...(likeInfo.isLiked && currentUserId ? [currentUserId] : []),
         ...Array.from(
-          { length: Math.max(likeInfo.TotalLikes - (likeInfo.IsLiked && currentUserId ? 1 : 0), 0) },
-          (_, index) => `like-${apiPost.Id}-${index}`,
+          { length: Math.max(likeInfo.totalLikes - (likeInfo.isLiked && currentUserId ? 1 : 0), 0) },
+          (_, index) => `like-${apiPost.id}-${index}`,
         ),
       ]
     : [];
 
-  const user = userLookup.get(apiPost.UserId) || mapApiUserToUser({
-    id: apiPost.UserId,
-    userName: displayNameFromEmail(apiPost.UserId),
-    email: `${apiPost.UserId}@interacthub.local`,
-    fullName: displayNameFromEmail(apiPost.UserId),
+  const user = userLookup.get(apiPost.userId) || mapApiUserToUser({
+    id: apiPost.userId,
+    userName: displayNameFromEmail(apiPost.userId),
+    email: `${apiPost.userId}@interacthub.local`,
+    fullName: displayNameFromEmail(apiPost.userId),
     avatar: DEFAULT_AVATAR,
     bio: '',
     dateOfBirth: null,
   });
 
   return {
-    id: String(apiPost.Id),
-    userId: apiPost.UserId,
+    id: String(apiPost.id),
+    userId: apiPost.userId,
     user,
-    content: apiPost.Content,
-    images: apiPost.ImageUrl ? [apiPost.ImageUrl] : [],
+    content: apiPost.content,
+    images: apiPost.imageUrl ? [apiPost.imageUrl] : [],
     likes,
     comments,
     shares: 0,
-    hashtags: extractHashtags(apiPost.Content),
-    createdAt: apiPost.CreatedAt,
-    updatedAt: apiPost.UpdatedAt,
+    hashtags: extractHashtags(apiPost.content),
+    createdAt: apiPost.createdAt,
+    updatedAt: apiPost.updatedAt,
   };
 };
-
 export const toFrontendStory = (apiStory: ApiStory, userLookup: Map<string, User>): Story => ({
-  id: String(apiStory.Id),
-  userId: apiStory.UserId,
+  id: String(apiStory.id),
+  userId: apiStory.userId,
   user:
-    userLookup.get(apiStory.UserId) ||
+    userLookup.get(apiStory.userId) ||
     mapApiUserToUser({
-      id: apiStory.UserId,
-      userName: displayNameFromEmail(apiStory.UserId),
-      email: `${apiStory.UserId}@interacthub.local`,
-      fullName: displayNameFromEmail(apiStory.UserId),
+      id: apiStory.userId,
+      userName: displayNameFromEmail(apiStory.userId),
+      email: `${apiStory.userId}@interacthub.local`,
+      fullName: displayNameFromEmail(apiStory.userId),
       avatar: DEFAULT_AVATAR,
       bio: '',
       dateOfBirth: null,
     }),
-  image: apiStory.ImageUrl,
-  createdAt: apiStory.CreatedAt,
-  expiresAt: new Date(new Date(apiStory.CreatedAt).getTime() + 24 * 60 * 60 * 1000).toISOString(),
+  image: apiStory.imageUrl,
+  createdAt: apiStory.createdAt,
+  expiresAt: new Date(new Date(apiStory.createdAt).getTime() + 24 * 60 * 60 * 1000).toISOString(),
   views: [],
 });
 
 export const toFrontendNotification = (notification: ApiNotification, userLookup: Map<string, User>): Notification => ({
-  id: String(notification.Id),
-  userId: notification.FromUserId || '',
+  id: String(notification.id),
+  userId: notification.fromUserId || '',
   fromUser:
-    (notification.FromUserId && userLookup.get(notification.FromUserId)) ||
+    (notification.fromUserId && userLookup.get(notification.fromUserId)) ||
     mapApiUserToUser({
-      id: notification.FromUserId || 'system',
-      userName: notification.FromUserName || 'system',
-      email: `${notification.FromUserId || 'system'}@interacthub.local`,
-      fullName: notification.FromUserName || 'Hệ thống',
+      id: notification.fromUserId || 'system',
+      userName: notification.fromUserName || 'system',
+      email: `${notification.fromUserId || 'system'}@interacthub.local`,
+      fullName: notification.fromUserName || 'Hệ thống',
       avatar: DEFAULT_AVATAR,
       bio: '',
       dateOfBirth: null,
     }),
-  type: (notification.Type as Notification['type']) || 'like',
+  type: (notification.type as Notification['type']) || 'like',
   postId: undefined,
-  message: notification.Content,
-  read: notification.IsRead,
-  createdAt: notification.CreatedAt,
+  message: notification.content,
+  read: notification.isRead,
+  createdAt: notification.createdAt,
 });
 
 export const toFrontendFriendRequest = (friendship: ApiFriendship, userLookup: Map<string, User>): FriendRequest => ({
-  id: String(friendship.Id),
-  fromUserId: friendship.SenderId,
-  toUserId: friendship.ReceiverId,
+  id: String(friendship.id),
+  fromUserId: friendship.senderId,
+  toUserId: friendship.receiverId,
   fromUser:
-    userLookup.get(friendship.SenderId) ||
+    userLookup.get(friendship.senderId) ||
     mapApiUserToUser({
-      id: friendship.SenderId,
-      userName: displayNameFromEmail(friendship.SenderId),
-      email: `${friendship.SenderId}@interacthub.local`,
-      fullName: displayNameFromEmail(friendship.SenderId),
+      id: friendship.senderId,
+      userName: displayNameFromEmail(friendship.senderId),
+      email: `${friendship.senderId}@interacthub.local`,
+      fullName: displayNameFromEmail(friendship.senderId),
       avatar: DEFAULT_AVATAR,
       bio: '',
       dateOfBirth: null,

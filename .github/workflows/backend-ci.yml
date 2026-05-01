@@ -1,4 +1,4 @@
-name: Build and Deploy to Azure
+name: Build Test and Deploy Render
 
 on:
   push:
@@ -12,13 +12,12 @@ on:
       - master
 
 env:
-  AZURE_WEBAPP_NAME: InteractHub
   DOTNET_VERSION: '10.0.x'
 
 jobs:
 
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -37,6 +36,7 @@ jobs:
 
       - name: Run tests
         run: dotnet test backend.Tests/backend.Tests.csproj --configuration Release
+
       - name: Publish project
         run: dotnet publish backend/backend.csproj --configuration Release --output ./publish
 
@@ -46,30 +46,13 @@ jobs:
           name: backend-app
           path: ./publish
 
-  deploy:
+  deploy-render:
     needs: build
-    runs-on: windows-latest
 
     if: github.ref == 'refs/heads/main'
 
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-app
-          path: ./publish
-
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: ./publish
-
-      - name: Logout Azure
-        run: az logout
-        if: always()
+      - name: Trigger Render Deploy
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}

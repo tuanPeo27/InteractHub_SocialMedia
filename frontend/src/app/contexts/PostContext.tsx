@@ -31,45 +31,47 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { users, loading: usersLoading } = useUsers();
 
   useEffect(() => {
+    if (usersLoading) return;
+
     const loadPosts = async () => {
-      if (usersLoading) {
-        return;
-      }
-
       setLoading(true);
-
       try {
         const apiPosts = await postsService.getFeed();
+
         const details = await Promise.all(
           apiPosts.map(async (post) => ({
             post,
-            comments: await commentsService.getByPost(String(post.Id)).catch(() => [] as ApiComment[]),
-            likeInfo: await likesService.getInfo(String(post.Id)).catch(() => null as ApiLikeInfo | null),
+            comments: await commentsService.getByPost(String(post.id)).catch(() => [] as ApiComment[]),
+            likeInfo: await likesService.getInfo(String(post.id)).catch(() => null as ApiLikeInfo | null),
           })),
         );
 
-        const userLookup = new Map(users.map((item) => [item.id, item] as const));
-        const commentLookup = new Map<number, ApiComment[]>();
-        const likeLookup = new Map<number, ApiLikeInfo>();
+        const userLookup = new Map(users.map(u => [u.id, u]));
+        const commentLookup = new Map();
+        const likeLookup = new Map();
 
         details.forEach((detail) => {
-          commentLookup.set(detail.post.Id, detail.comments);
+          commentLookup.set(detail.post.id, detail.comments);
           if (detail.likeInfo) {
-            likeLookup.set(detail.post.Id, detail.likeInfo);
+            likeLookup.set(detail.post.id, detail.likeInfo);
           }
         });
 
-        setPosts(apiPosts.map((post) => toFrontendPost(post, userLookup, commentLookup, likeLookup, user?.id)));
-      } catch {
+        setPosts(apiPosts.map(post =>
+          toFrontendPost(post, userLookup, commentLookup, likeLookup, user?.id)
+        ));
+      } catch (err) {
+        console.error(err);
         setPosts([]);
       } finally {
         setLoading(false);
       }
     };
 
-    void loadPosts();
-  }, [user?.id, users.length, usersLoading]);
+    loadPosts();
+  }, [usersLoading, user?.id]);
 
+  console.log("posts:", posts);
   const createPost = async (content: string, images: string[], hashtags: string[]) => {
     if (!user) return;
 
@@ -93,9 +95,9 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return post;
       }
 
-      const likes = likeInfo.IsLiked
-        ? [user.id, ...Array.from({ length: Math.max(likeInfo.TotalLikes - 1, 0) }, (_, index) => `like-${postId}-${index}`)]
-        : Array.from({ length: likeInfo.TotalLikes }, (_, index) => `like-${postId}-${index}`);
+      const likes = likeInfo.isLiked
+        ? [user.id, ...Array.from({ length: Math.max(likeInfo.totalLikes - 1, 0) }, (_, index) => `like-${postId}-${index}`)]
+        : Array.from({ length: likeInfo.totalLikes }, (_, index) => `like-${postId}-${index}`);
 
       return { ...post, likes };
     }));
@@ -111,12 +113,12 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const createdComment = await commentsService.create(Number(postId), content);
     const userLookup = new Map(users.map((item) => [item.id, item] as const));
     const comment: Comment = {
-      id: String(createdComment.Id),
-      postId: String(createdComment.PostId),
-      userId: createdComment.UserId,
-      user: userLookup.get(createdComment.UserId) || user,
-      content: createdComment.Content,
-      createdAt: createdComment.CreatedAt,
+      id: String(createdComment.id),
+      postId: String(createdComment.postId),
+      userId: createdComment.userId,
+      user: userLookup.get(createdComment.userId) || user,
+      content: createdComment.content,
+      createdAt: createdComment.createdAt,
     };
 
     setPosts((current) => current.map((post) => {

@@ -1,6 +1,10 @@
 import axios from 'axios';
 
+<<<<<<< HEAD
 const DEFAULT_API_BASE_URL = 'http://26.248.122.134:5052/api';
+=======
+const DEFAULT_API_BASE_URL = 'http:///26.248.122.134:5052/api';
+>>>>>>> 253cc2c48670f7bcbd070bdb178bfb3464837fa9
 const AUTH_TOKEN_KEY = 'authToken';
 const CURRENT_USER_KEY = 'currentUser';
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using backend.DTOs.Request;
 
 [ApiController]
 [Route("api/admin")]
@@ -52,5 +53,14 @@ public class AdminController : ControllerBase
     {
         var data = await _service.GetUsersAsync();
         return Ok(data);
+    }
+
+    [HttpPost("set-role")]
+    public async Task<IActionResult> SetRole([FromBody] SetUserRoleRequest request)
+    {
+        var ok = await _service.SetUserRoleAsync(request.UserId, request.RoleName);
+        if (!ok) return BadRequest("Update role failed");
+
+        return Ok("Role updated");
     }
 }

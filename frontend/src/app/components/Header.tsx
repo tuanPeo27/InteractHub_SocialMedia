@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Bell, MessageSquare, LogOut, User } from 'lucide-react';
+import { Search, Bell, MessageSquare, LogOut, User, KeyRound } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -13,12 +13,14 @@ import {
 } from './ui/dropdown-menu';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import ChangePasswordDialog from './ChangePasswordDialog';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,7 +113,12 @@ const Header: React.FC = () => {
                   Quản trị viên
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem onClick={() => setShowChangePassword(true)}>
+                <KeyRound className="w-4 h-4 mr-2" />
+                Đổi mật khẩu
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
+              
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Đăng xuất
@@ -120,6 +127,10 @@ const Header: React.FC = () => {
           </DropdownMenu>
         </div>
       </div>
+      <ChangePasswordDialog
+        open={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
     </header>
   );
 };
