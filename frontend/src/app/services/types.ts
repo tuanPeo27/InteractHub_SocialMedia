@@ -1,4 +1,11 @@
-import { Comment, FriendRequest, Notification, Post, Story, User } from '../types';
+import {
+  Comment,
+  FriendRequest,
+  Notification,
+  Post,
+  Story,
+  User,
+} from "../types";
 
 export interface ApiAuthResult {
   success: boolean;
@@ -15,13 +22,13 @@ export interface ApiAuthResult {
 }
 
 export interface ApiUser {
-  Id: string;
-  UserName: string;
-  Email: string;
-  FullName?: string | null;
-  Avatar?: string | null;
-  Bio?: string | null;
-  DateOfBirth?: string | null;
+  id: string;
+  userName: string;
+  email: string;
+  fullName?: string | null;
+  avatar?: string | null;
+  bio?: string | null;
+  dateOfBirth?: string | null;
 }
 
 export interface ApiPost {
@@ -34,41 +41,69 @@ export interface ApiPost {
 }
 
 export interface ApiStory {
-  Id: number;
-  ImageUrl: string;
-  UserId: string;
-  CreatedAt: string;
+  id: number;
+  imageUrl: string;
+  userId: string;
+  createdAt: string;
 }
 
 export interface ApiNotification {
-  Id: number;
-  Content: string;
-  IsRead: boolean;
-  CreatedAt: string;
-  FromUserId?: string | null;
-  FromUserName?: string | null;
-  Type?: string | null;
+  id: number;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+  fromUserId?: string | null;
+  fromUserName?: string | null;
+  type?: string | null;
 }
 
 export interface ApiComment {
-  Id: number;
-  Content: string;
-  UserId: string;
-  PostId: number;
-  CreatedAt: string;
+  id: number;
+  content: string;
+  userId: string;
+  postId: number;
+  createdAt: string;
 }
 
 export interface ApiLikeInfo {
-  PostId: number;
-  TotalLikes: number;
-  IsLiked: boolean;
+  postId: number;
+  totalLikes: number;
+  isLiked: boolean;
 }
 
 export interface ApiFriendship {
-  Id: number;
-  SenderId: string;
-  ReceiverId: string;
-  Status: string;
+  id: number;
+  senderId: string;
+  receiverId: string;
+  status: string;
 }
 
-export type { Comment, FriendRequest, Notification, Post, Story, User };
+export interface ApiAdminUser {
+  id: string;
+  userName: string;
+  email: string;
+  isLocked: boolean;
+  roles?: string[];
+  fullName?: string | null;
+  phoneNumber?: string | null;
+  avatar?: string | null;
+  bio?: string | null;
+  dateOfBirth?: string | null;
+}
+
+export interface ApiReport {
+  id: number;
+  postId: number;
+  reason: string;
+  userName: string;
+  createdAt: string;
+}
+
+export type {
+  Comment,
+  FriendRequest,
+  Notification,
+  Post,
+  Story,
+  User,
+};

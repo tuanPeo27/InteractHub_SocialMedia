@@ -121,7 +121,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const register = async (userData: Partial<User> & { password: string }): Promise<AuthActionResult> => {
     try {
-      const response = await authService.register(userData.email || '', userData.password);
+      const response = await authService.register(
+        userData.email || '',
+        userData.password,
+        userData.username,
+        userData.fullName,
+      );
 
       if (!response.success) {
         return { success: false, message: response.message };

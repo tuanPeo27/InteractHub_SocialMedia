@@ -35,12 +35,18 @@ const loginValidation = {
   },
 
   password: {
-    required: "Mật khẩu là bắt buộc",
-    minLength: {
-      value: 6,
-      message: "Mật khẩu phải có ít nhất 6 ký tự",
-    },
+  required: "Mật khẩu là bắt buộc",
+  minLength: {
+    value: 6,
+    message: "Mật khẩu phải có ít nhất 6 ký tự",
   },
+  pattern: {
+    // ít nhất 1 chữ hoa, 1 số, 1 ký tự đặc biệt
+    value: /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).+$/,
+    message:
+      "Mật khẩu phải có ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt",
+  },
+},
 };
 
 const LoginPage: React.FC = () => {
@@ -64,20 +70,13 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log("Form Data:", data);
-
-      const result = await login(
-        data.email.trim(),
-        data.password
-      );
+      const result = await login(data.email.trim(), data.password);
 
       if (result.success) {
         toast.success("Đăng nhập thành công!");
         navigate("/");
       } else {
-        toast.error(
-          result.message || "Email hoặc mật khẩu không đúng!"
-        );
+        toast.error(result.message || "Email hoặc mật khẩu không đúng!");
       }
     } catch (error) {
       console.error(error);
@@ -96,9 +95,7 @@ const LoginPage: React.FC = () => {
             <MessageSquare className="w-8 h-8 text-blue-600" />
           </div>
 
-          <h1 className="text-4xl font-bold text-white mb-2">
-            InteractHub
-          </h1>
+          <h1 className="text-4xl font-bold text-white mb-2">InteractHub</h1>
 
           <p className="text-blue-100">
             Kết nối mọi người, chia sẻ khoảnh khắc
@@ -134,15 +131,15 @@ const LoginPage: React.FC = () => {
                 />
 
                 {errors.email && (
-                  <p className="text-sm text-red-500">
-                    {errors.email.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
                 )}
               </div>
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Mật khẩu</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Mật khẩu</Label>
+                </div>
 
                 <Input
                   id="password"
@@ -159,12 +156,16 @@ const LoginPage: React.FC = () => {
                   </p>
                 )}
               </div>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading}
+              
+              {/* Link quên mật khẩu */}
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-600 hover:underline"
               >
+                Quên mật khẩu?
+              </Link>
+
+              <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Đang đăng nhập..." : "Đăng nhập"}
               </Button>
             </form>
@@ -173,10 +174,7 @@ const LoginPage: React.FC = () => {
           <CardFooter className="flex-col gap-2">
             <p className="text-sm text-gray-600">
               Chưa có tài khoản?{" "}
-              <Link
-                to="/register"
-                className="text-blue-600 hover:underline"
-              >
+              <Link to="/register" className="text-blue-600 hover:underline">
                 Đăng ký ngay
               </Link>
             </p>
