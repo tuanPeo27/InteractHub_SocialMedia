@@ -1,19 +1,36 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
 import { User } from '../types';
 import { authService } from '../services/authService';
 import { authStorage, getStoredAuthToken, clearAuthSession } from '../services/http';
 import { DEFAULT_AVATAR, mapAuthUserToUser } from '../services/mappers';
 
+interface AuthActionResult {
+  success: boolean;
+  message?: string;
+}
+
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (userData: Partial<User> & { password: string }) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<AuthActionResult>;
+  register: (userData: Partial<User> & { password: string }) => Promise<AuthActionResult>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const resolveAuthErrorMessage = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as { message?: string } | undefined;
+    if (data?.message) {
+      return data.message;
+    }
+  }
+
+  return error instanceof Error ? error.message : 'Đã có lỗi xảy ra!';
+};
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
@@ -83,40 +100,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     authService.storeAuthSession(nextToken || getStoredAuthToken() || '', JSON.stringify(nextUser));
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    const response = await authService.login(email, password);
+  const login = async (email: string, password: string): Promise<AuthActionResult> => {
+    try {
+      const response = await authService.login(email, password);
 
-    if (response.success && response.data?.token) {
-      const savedUser = localStorage.getItem(authStorage.userKey);
-      const existingUser = savedUser ? (JSON.parse(savedUser) as User) : null;
-      const nextUser = mapAuthUserToUser(response.data, existingUser);
+      if (response.success && response.data?.token) {
+        const savedUser = localStorage.getItem(authStorage.userKey);
+        const existingUser = savedUser ? (JSON.parse(savedUser) as User) : null;
+        const nextUser = mapAuthUserToUser(response.data, existingUser);
 
-      persistSession(nextUser, response.data.token);
-      return true;
+        persistSession(nextUser, response.data.token);
+        return { success: true, message: response.message };
+      }
+
+      return { success: false, message: response.message };
+    } catch (error) {
+      return { success: false, message: resolveAuthErrorMessage(error) };
     }
-
-    return false;
   };
 
-  const register = async (userData: Partial<User> & { password: string }): Promise<boolean> => {
-    const response = await authService.register(userData.email || '', userData.password);
+  const register = async (userData: Partial<User> & { password: string }): Promise<AuthActionResult> => {
+    try {
+      const response = await authService.register(userData.email || '', userData.password);
 
-    if (!response.success) {
-      return false;
+      if (!response.success) {
+        return { success: false, message: response.message };
+      }
+
+      const loginResult = await login(userData.email || '', userData.password);
+
+      if (loginResult.success && userData.email) {
+        await updateProfile({
+          username: userData.username || userData.email.split('@')[0],
+          fullName: userData.fullName || userData.username || userData.email.split('@')[0],
+          bio: '',
+          avatar: DEFAULT_AVATAR,
+        });
+      }
+
+      return loginResult;
+    } catch (error) {
+      return { success: false, message: resolveAuthErrorMessage(error) };
     }
-
-    const loginSuccess = await login(userData.email || '', userData.password);
-
-    if (loginSuccess && userData.email) {
-      await updateProfile({
-        username: userData.username || userData.email.split('@')[0],
-        fullName: userData.fullName || userData.username || userData.email.split('@')[0],
-        bio: '',
-        avatar: DEFAULT_AVATAR,
-      });
-    }
-
-    return loginSuccess;
   };
 
   const logout = () => {

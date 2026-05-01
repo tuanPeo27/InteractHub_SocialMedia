@@ -27,18 +27,18 @@ const RegisterPage: React.FC = () => {
   const onSubmit = async (data: RegisterForm) => {
     setLoading(true);
     try {
-      const success = await registerUser({
+      const result = await registerUser({
         fullName: data.fullName,
         username: data.username,
-        email: data.email,
+        email: data.email.trim(),
         password: data.password,
       });
 
-      if (success) {
+      if (result.success) {
         toast.success('Đăng ký thành công!');
         navigate('/');
       } else {
-        toast.error('Đăng ký thất bại!');
+        toast.error(result.message || 'Đăng ký thất bại!');
       }
     } catch (error) {
       toast.error('Đã có lỗi xảy ra!');
@@ -72,7 +72,15 @@ const RegisterPage: React.FC = () => {
                 <Input
                   id="fullName"
                   placeholder="Nguyễn Văn A"
-                  {...register('fullName', { required: 'Họ và tên là bắt buộc' })}
+                  disabled={loading}
+                  {...register('fullName', {
+                    required: 'Họ và tên là bắt buộc',
+                    minLength: {
+                      value: 2,
+                      message: 'Họ và tên phải có ít nhất 2 ký tự',
+                    },
+                    setValueAs: (value: string) => value.trim(),
+                  })}
                 />
                 {errors.fullName && (
                   <p className="text-sm text-red-500">{errors.fullName.message}</p>
@@ -84,12 +92,22 @@ const RegisterPage: React.FC = () => {
                 <Input
                   id="username"
                   placeholder="nguyenvana"
+                  disabled={loading}
                   {...register('username', {
                     required: 'Tên người dùng là bắt buộc',
                     pattern: {
                       value: /^[a-z0-9_]+$/,
                       message: 'Chỉ được dùng chữ thường, số và dấu gạch dưới'
-                    }
+                    },
+                    minLength: {
+                      value: 3,
+                      message: 'Tên người dùng phải có ít nhất 3 ký tự',
+                    },
+                    maxLength: {
+                      value: 20,
+                      message: 'Tên người dùng tối đa 20 ký tự',
+                    },
+                    setValueAs: (value: string) => value.trim(),
                   })}
                 />
                 {errors.username && (
@@ -103,12 +121,14 @@ const RegisterPage: React.FC = () => {
                   id="email"
                   type="email"
                   placeholder="example@email.com"
+                  disabled={loading}
                   {...register('email', {
                     required: 'Email là bắt buộc',
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                       message: 'Email không hợp lệ'
-                    }
+                    },
+                    setValueAs: (value: string) => value.trim(),
                   })}
                 />
                 {errors.email && (
@@ -122,12 +142,17 @@ const RegisterPage: React.FC = () => {
                   id="password"
                   type="password"
                   placeholder="••••••••"
+                  disabled={loading}
                   {...register('password', {
                     required: 'Mật khẩu là bắt buộc',
                     minLength: {
                       value: 6,
                       message: 'Mật khẩu phải có ít nhất 6 ký tự'
-                    }
+                    },
+                    maxLength: {
+                      value: 64,
+                      message: 'Mật khẩu tối đa 64 ký tự',
+                    },
                   })}
                 />
                 {errors.password && (
@@ -141,6 +166,7 @@ const RegisterPage: React.FC = () => {
                   id="confirmPassword"
                   type="password"
                   placeholder="••••••••"
+                  disabled={loading}
                   {...register('confirmPassword', {
                     required: 'Vui lòng xác nhận mật khẩu',
                     validate: value => value === password || 'Mật khẩu không khớp'

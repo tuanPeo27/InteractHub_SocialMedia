@@ -53,14 +53,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     };
 
     void loadFriends();
-  }, [user, usersLoading, users.length]);
-
-  useEffect(() => {
-    if (!user) {
-      setFriendRequests([]);
-      setFriends([]);
-    }
-  }, [friendRequests, friends, user]);
+  }, [user, usersLoading, users]);
 
   const sendFriendRequest = async (toUserId: string) => {
     if (!user) return;
