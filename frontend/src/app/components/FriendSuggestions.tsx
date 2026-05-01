@@ -13,12 +13,12 @@ const FriendSuggestions: React.FC = () => {
   const { user } = useAuth();
   const { friends, sendFriendRequest, hasPendingRequest } = useFriends();
   const { users } = useUsers();
-
   const suggestions = users
     .filter(u => u.id !== user?.id && !friends.some(f => f.id === u.id))
     .slice(0, 5);
 
   const handleSendRequest = async (userId: string) => {
+    console.log(userId);
     await sendFriendRequest(userId);
     toast.success('Đã gửi lời mời kết bạn!');
   };
@@ -31,7 +31,7 @@ const FriendSuggestions: React.FC = () => {
           Gợi ý kết bạn
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2">
         {suggestions.map((suggestedUser) => (
           <div key={suggestedUser.id} className="flex items-center gap-3">
             <Link to={`/profile/${suggestedUser.id}`}>

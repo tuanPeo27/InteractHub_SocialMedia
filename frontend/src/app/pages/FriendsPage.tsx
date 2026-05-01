@@ -68,9 +68,9 @@ const FriendsPage: React.FC = () => {
                           {friend.fullName}
                         </Link>
                         <p className="text-sm text-gray-500">@{friend.username}</p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        {/* <p className="text-xs text-gray-400 mt-1">
                           {friend.followers} người theo dõi
-                        </p>
+                        </p> */}
                       </div>
                       <Button
                         variant="outline"
@@ -108,9 +108,9 @@ const FriendsPage: React.FC = () => {
                           {request.fromUser.fullName}
                         </Link>
                         <p className="text-sm text-gray-500">@{request.fromUser.username}</p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        {/* <p className="text-xs text-gray-400 mt-1">
                           {request.fromUser.followers} người theo dõi
-                        </p>
+                        </p> */}
                       </div>
                       <div className="flex gap-2">
                         <Button

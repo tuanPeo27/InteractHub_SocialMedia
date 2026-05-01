@@ -118,14 +118,14 @@ const ProfilePage: React.FC = () => {
                   <span className="font-bold">{userPosts.length}</span>
                   <span className="text-gray-600 ml-1">Bài viết</span>
                 </div>
-                <div>
+                {/* <div>
                   <span className="font-bold">{profileUser.followers}</span>
                   <span className="text-gray-600 ml-1">Người theo dõi</span>
                 </div>
                 <div>
                   <span className="font-bold">{profileUser.following}</span>
                   <span className="text-gray-600 ml-1">Đang theo dõi</span>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { FriendRequest, User } from '../types';
+import { FriendRequest, User, FriendRequestStatus} from '../types';
 import { useAuth } from './AuthContext';
 import { useUsers } from './UsersContext';
 import { friendsService } from '../services/friendsService';
@@ -35,6 +35,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
       try {
         const friendships = await friendsService.getAll();
+        console.log(friendships);
         const userLookup = new Map(users.map((item) => [item.id, item] as const));
 
         const nextFriends = friendships
@@ -45,7 +46,9 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           .filter((friend): friend is User => Boolean(friend));
 
         setFriends(nextFriends);
-        setFriendRequests(friendships.map((friendship) => toFrontendFriendRequest(friendship, userLookup)));
+        setFriendRequests(friendships
+          .map((friendship) => toFrontendFriendRequest(friendship, userLookup))
+        );
       } catch {
         setFriendRequests([]);
         setFriends([]);
@@ -68,7 +71,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       fromUserId: user.id,
       toUserId,
       fromUser: user,
-      status: 'pending',
+      status: FriendRequestStatus.Pending,
       createdAt: new Date().toISOString(),
     };
 
@@ -82,7 +85,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     await friendsService.accept(requestId);
 
     setFriendRequests(friendRequests.map(r =>
-      r.id === requestId ? { ...r, status: 'accepted' as const } : r
+      r.id === requestId ? { ...r, status: FriendRequestStatus.Accepted as const } : r
     ));
 
     // Add to friends list
@@ -94,7 +97,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const rejectFriendRequest = async (requestId: string) => {
     await friendsService.reject(requestId);
     setFriendRequests(friendRequests.map(r =>
-      r.id === requestId ? { ...r, status: 'rejected' as const } : r
+      r.id === requestId ? { ...r, status: FriendRequestStatus.Rejected as const } : r
     ));
   };
 
@@ -108,7 +111,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const getPendingRequests = () => {
     if (!user) return [];
     return friendRequests.filter(
-      r => r.toUserId === user.id && r.status === 'pending'
+      r => r.toUserId === user.id && r.status === FriendRequestStatus.Pending
     );
   };
 
@@ -121,7 +124,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     return friendRequests.some(
       r => ((r.fromUserId === user.id && r.toUserId === userId) ||
            (r.fromUserId === userId && r.toUserId === user.id)) &&
-          r.status === 'pending'
+          r.status === FriendRequestStatus.Pending
     );
   };
 

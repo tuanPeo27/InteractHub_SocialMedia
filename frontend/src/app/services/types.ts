@@ -1,4 +1,4 @@
-import { Comment, FriendRequest, Notification, Post, Story, User } from '../types';
+import { Comment, FriendRequest, Notification, Post, Story, User, FriendRequestStatus } from '../types';
 
 export interface ApiAuthResult {
   success: boolean;
@@ -15,13 +15,13 @@ export interface ApiAuthResult {
 }
 
 export interface ApiUser {
-  Id: string;
-  UserName: string;
-  Email: string;
-  FullName?: string | null;
-  Avatar?: string | null;
-  Bio?: string | null;
-  DateOfBirth?: string | null;
+  id: string;
+  userName: string;
+  email: string;
+  fullName?: string | null;
+  avatar?: string | null;
+  bio?: string | null;
+  dateOfBirth?: string | null;
 }
 
 export interface ApiPost {
@@ -68,7 +68,7 @@ export interface ApiFriendship {
   Id: number;
   SenderId: string;
   ReceiverId: string;
-  Status: string;
+  Status: FriendRequestStatus;
 }
 
-export type { Comment, FriendRequest, Notification, Post, Story, User };
+export type { Comment, FriendRequest, Notification, Post, Story, User, FriendRequestStatus };

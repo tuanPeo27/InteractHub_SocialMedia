@@ -5,8 +5,6 @@ export interface User {
   fullName: string;
   avatar: string;
   bio: string;
-  followers: number;
-  following: number;
   isAdmin?: boolean;
   createdAt: string;
 }
@@ -55,12 +53,18 @@ export interface Notification {
   createdAt: string;
 }
 
+export enum FriendRequestStatus {
+  Pending = 0,
+  Accepted = 1,
+  Rejected = 2,
+}
+
 export interface FriendRequest {
   id: string;
   fromUserId: string;
   toUserId: string;
   fromUser: User;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: FriendRequestStatus;
   createdAt: string;
 }
 

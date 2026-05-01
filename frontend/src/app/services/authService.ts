@@ -9,22 +9,22 @@ export const authService = {
   storeAuthSession,
 
   async login(email: string, password: string) {
-    const response = await apiClient.post<ApiAuthResult>('/auth/login', { email, password });
+    const response = await apiClient.post<ApiAuthResult>('/Auth/login', { email, password });
     return response.data;
   },
 
   async register(email: string, password: string) {
-    const response = await apiClient.post<ApiAuthResult>('/auth/register', { email, password });
+    const response = await apiClient.post<ApiAuthResult>('/Auth/register', { email, password });
     return response.data;
   },
 
   async getCurrentUser() {
-    const response = await apiClient.get<ApiUser>('/users/me');
+    const response = await apiClient.get<ApiUser>('/User/me');
     return response.data;
   },
 
   async updateCurrentUser(data: Partial<User>) {
-    const response = await apiClient.put('/users/me', {
+    const response = await apiClient.put('/User/me', {
       userName: data.username,
       fullName: data.fullName,
       bio: data.bio,

@@ -44,7 +44,6 @@ export const UsersProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
 export const useUsers = () => {
   const context = useContext(UsersContext);
-
   if (!context) {
     throw new Error('useUsers must be used within UsersProvider');
   }

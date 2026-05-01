@@ -55,24 +55,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               ...savedUser,
               ...mapAuthUserToUser(
                 {
-                  email: currentUser.Email,
-                  userName: currentUser.UserName,
-                  userId: currentUser.Id,
-                  roles: currentUser.UserName?.toLowerCase() === 'admin' ? ['Admin'] : [],
-                  primaryRole: currentUser.UserName?.toLowerCase() === 'admin' ? 'Admin' : undefined,
+                  email: currentUser.email,
+                  userName: currentUser.userName,
+                  userId: currentUser.id,
+                  roles: currentUser.userName?.toLowerCase() === 'admin' ? ['Admin'] : [],
+                  primaryRole: currentUser.userName?.toLowerCase() === 'admin' ? 'Admin' : undefined,
                 },
                 savedUser,
               ),
             }
           : {
-              id: currentUser.Id,
-              username: currentUser.UserName || currentUser.Email.split('@')[0],
-              email: currentUser.Email,
-              fullName: currentUser.FullName || currentUser.UserName || currentUser.Email.split('@')[0],
-              avatar: currentUser.Avatar || DEFAULT_AVATAR,
-              bio: currentUser.Bio || '',
-              followers: 0,
-              following: 0,
+              id: currentUser.id,
+              username: currentUser.userName || currentUser.email.split('@')[0],
+              email: currentUser.email,
+              fullName: currentUser.fullName || currentUser.userName || currentUser.email.split('@')[0],
+              avatar: currentUser.avatar || DEFAULT_AVATAR,
+              bio: currentUser.bio || '',
               createdAt: new Date().toISOString(),
             };
 

@@ -1,4 +1,4 @@
-import { Comment, FriendRequest, Notification, Post, Story, User } from '../types';
+import { Comment, FriendRequest, Notification, Post, Story, User, FriendRequestStatus } from '../types';
 import { ApiComment, ApiFriendship, ApiNotification, ApiPost, ApiStory, ApiUser } from './types';
 
 export const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1771050889377-b68415885c64?w=200';
@@ -6,16 +6,14 @@ export const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1771050889377-b
 const displayNameFromEmail = (email?: string | null) => email?.split('@')[0] || 'Người dùng';
 
 export const mapApiUserToUser = (apiUser: ApiUser, fallbackRole?: string): User => ({
-  id: apiUser.Id,
-  username: apiUser.UserName || displayNameFromEmail(apiUser.Email),
-  email: apiUser.Email,
-  fullName: apiUser.FullName || apiUser.UserName || displayNameFromEmail(apiUser.Email),
-  avatar: apiUser.Avatar || DEFAULT_AVATAR,
-  bio: apiUser.Bio || '',
-  followers: 0,
-  following: 0,
-  isAdmin: fallbackRole === 'Admin' || apiUser.UserName?.toLowerCase() === 'admin',
-  createdAt: apiUser.DateOfBirth || new Date().toISOString(),
+  id: apiUser.id,
+  username: apiUser.userName || displayNameFromEmail(apiUser.email),
+  email: apiUser.email,
+  fullName: apiUser.fullName || apiUser.userName || displayNameFromEmail(apiUser.email),
+  avatar: apiUser.avatar || DEFAULT_AVATAR,
+  bio: apiUser.bio || '',
+  isAdmin: fallbackRole === 'Admin' || apiUser.userName?.toLowerCase() === 'admin',
+  createdAt: apiUser.dateOfBirth || new Date().toISOString(),
 });
 
 export const mapAuthUserToUser = (
@@ -28,8 +26,6 @@ export const mapAuthUserToUser = (
   fullName: existingUser?.fullName || authData.userName || displayNameFromEmail(authData.email),
   avatar: existingUser?.avatar || DEFAULT_AVATAR,
   bio: existingUser?.bio || '',
-  followers: existingUser?.followers ?? 0,
-  following: existingUser?.following ?? 0,
   isAdmin: existingUser?.isAdmin || authData.roles?.includes('Admin') || authData.primaryRole === 'Admin',
   createdAt: existingUser?.createdAt || new Date().toISOString(),
 });
@@ -51,13 +47,13 @@ export const toFrontendPost = (
     postId: String(comment.PostId),
     userId: comment.UserId,
     user: userLookup.get(comment.UserId) || mapApiUserToUser({
-      Id: comment.UserId,
-      UserName: displayNameFromEmail(comment.UserId),
-      Email: `${comment.UserId}@interacthub.local`,
-      FullName: displayNameFromEmail(comment.UserId),
-      Avatar: DEFAULT_AVATAR,
-      Bio: '',
-      DateOfBirth: null,
+      id: comment.UserId,
+      userName: displayNameFromEmail(comment.UserId),
+      email: `${comment.UserId}@interacthub.local`,
+      fullName: displayNameFromEmail(comment.UserId),
+      avatar: DEFAULT_AVATAR,
+      bio: '',
+      dateOfBirth: null,
     }),
     content: comment.Content,
     createdAt: comment.CreatedAt,
@@ -75,13 +71,13 @@ export const toFrontendPost = (
     : [];
 
   const user = userLookup.get(apiPost.UserId) || mapApiUserToUser({
-    Id: apiPost.UserId,
-    UserName: displayNameFromEmail(apiPost.UserId),
-    Email: `${apiPost.UserId}@interacthub.local`,
-    FullName: displayNameFromEmail(apiPost.UserId),
-    Avatar: DEFAULT_AVATAR,
-    Bio: '',
-    DateOfBirth: null,
+    id: apiPost.UserId,
+    userName: displayNameFromEmail(apiPost.UserId),
+    email: `${apiPost.UserId}@interacthub.local`,
+    fullName: displayNameFromEmail(apiPost.UserId),
+    avatar: DEFAULT_AVATAR,
+    bio: '',
+    dateOfBirth: null,
   });
 
   return {
@@ -105,13 +101,13 @@ export const toFrontendStory = (apiStory: ApiStory, userLookup: Map<string, User
   user:
     userLookup.get(apiStory.UserId) ||
     mapApiUserToUser({
-      Id: apiStory.UserId,
-      UserName: displayNameFromEmail(apiStory.UserId),
-      Email: `${apiStory.UserId}@interacthub.local`,
-      FullName: displayNameFromEmail(apiStory.UserId),
-      Avatar: DEFAULT_AVATAR,
-      Bio: '',
-      DateOfBirth: null,
+      id: apiStory.UserId,
+      userName: displayNameFromEmail(apiStory.UserId),
+      email: `${apiStory.UserId}@interacthub.local`,
+      fullName: displayNameFromEmail(apiStory.UserId),
+      avatar: DEFAULT_AVATAR,
+      bio: '',
+      dateOfBirth: null,
     }),
   image: apiStory.ImageUrl,
   createdAt: apiStory.CreatedAt,
@@ -125,13 +121,13 @@ export const toFrontendNotification = (notification: ApiNotification, userLookup
   fromUser:
     (notification.FromUserId && userLookup.get(notification.FromUserId)) ||
     mapApiUserToUser({
-      Id: notification.FromUserId || 'system',
-      UserName: notification.FromUserName || 'system',
-      Email: `${notification.FromUserId || 'system'}@interacthub.local`,
-      FullName: notification.FromUserName || 'Hệ thống',
-      Avatar: DEFAULT_AVATAR,
-      Bio: '',
-      DateOfBirth: null,
+      id: notification.FromUserId || 'system',
+      userName: notification.FromUserName || 'system',
+      email: `${notification.FromUserId || 'system'}@interacthub.local`,
+      fullName: notification.FromUserName || 'Hệ thống',
+      avatar: DEFAULT_AVATAR,
+      bio: '',
+      dateOfBirth: null,
     }),
   type: (notification.Type as Notification['type']) || 'like',
   postId: undefined,
@@ -147,14 +143,14 @@ export const toFrontendFriendRequest = (friendship: ApiFriendship, userLookup: M
   fromUser:
     userLookup.get(friendship.SenderId) ||
     mapApiUserToUser({
-      Id: friendship.SenderId,
-      UserName: displayNameFromEmail(friendship.SenderId),
-      Email: `${friendship.SenderId}@interacthub.local`,
-      FullName: displayNameFromEmail(friendship.SenderId),
-      Avatar: DEFAULT_AVATAR,
-      Bio: '',
-      DateOfBirth: null,
+      id: friendship.SenderId,
+      userName: displayNameFromEmail(friendship.SenderId),
+      email: `${friendship.SenderId}@interacthub.local`,
+      fullName: displayNameFromEmail(friendship.SenderId),
+      avatar: DEFAULT_AVATAR,
+      bio: '',
+      dateOfBirth: null,
     }),
-  status: (friendship.Status.toLowerCase() as FriendRequest['status']) || 'pending',
+  status: friendship.Status as FriendRequestStatus,
   createdAt: new Date().toISOString(),
 });

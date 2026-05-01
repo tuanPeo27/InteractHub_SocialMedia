@@ -28,14 +28,14 @@ const Layout: React.FC = () => {
       
       <div className="flex max-w-7xl mx-auto pt-16">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-64 fixed left-0 top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r bg-white">
+        <aside className="hidden lg:block w-60 fixed left-0 top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <Sidebar />
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 pb-20 lg:pb-4">
+        <main className="flex-1 lg:ml-64 xl:mr-80 pb-20 lg:pb-4">
           <div className="max-w-2xl mx-auto px-4 py-6">
             <Outlet />
           </div>
