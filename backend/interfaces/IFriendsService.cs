@@ -13,6 +13,7 @@ public interface IFriendsService
 
     Task<List<FriendShip>> GetReceivedRequests(string userId);
     Task<List<FriendShip>> GetSentRequests(string userId);
+    Task UnfriendAsync(string userId, string friendId);
 
     Task<List<string>> GetFriendIds(string userId);
     Task<bool> IsFriend(string user1, string user2);
