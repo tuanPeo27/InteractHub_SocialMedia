@@ -76,7 +76,7 @@ export interface ApiFriendship {
   id: number;
   senderId: string;
   receiverId: string;
-  Status: FriendRequestStatus;
+  status: FriendRequestStatus;
 }
 
 export type { Comment, FriendRequest, Notification, Post, Story, User, FriendRequestStatus };

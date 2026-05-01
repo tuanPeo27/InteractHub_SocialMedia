@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { FriendRequest, User, FriendRequestStatus} from '../types';
+import { FriendRequest, FriendReceive, User, FriendRequestStatus} from '../types';
 import { useAuth } from './AuthContext';
 import { useUsers } from './UsersContext';
 import { friendsService } from '../services/friendsService';
@@ -8,11 +8,12 @@ import { toFrontendFriendRequest } from '../services/mappers';
 interface FriendContextType {
   friendRequests: FriendRequest[];
   friends: User[];
+  friendReceives: FriendReceive[];
   sendFriendRequest: (toUserId: string) => void;
   acceptFriendRequest: (requestId: string) => void;
   rejectFriendRequest: (requestId: string) => void;
   removeFriend: (userId: string) => void;
-  getPendingRequests: () => FriendRequest[];
+  getPendingRequests: () => FriendReceive[];
   isFriend: (userId: string) => boolean;
   hasPendingRequest: (userId: string) => boolean;
 }
@@ -21,6 +22,7 @@ const FriendContext = createContext<FriendContextType | undefined>(undefined);
 
 export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [friendReceives, setFriendReceives] = useState<FriendReceive[]>([]);
   const [friends, setFriends] = useState<User[]>([]);
   const { user } = useAuth();
   const { users, loading: usersLoading } = useUsers();
@@ -29,13 +31,15 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const loadFriends = async () => {
       if (!user || usersLoading) {
         setFriendRequests([]);
+        setFriendReceives([]);
         setFriends([]);
         return;
       }
 
       try {
         const friendships = await friendsService.getAll();
-        console.log(friendships);
+        const pendingRequests = await friendsService.recieveedRequests();
+        // console.log(pendingRequests);
         const userLookup = new Map(users.map((item) => [item.id, item] as const));
 
         const nextFriends = friendships
@@ -46,11 +50,12 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           .filter((friend): friend is User => Boolean(friend));
 
         setFriends(nextFriends);
-        setFriendRequests(friendships
+        setFriendReceives(pendingRequests
           .map((friendship) => toFrontendFriendRequest(friendship, userLookup))
         );
       } catch {
         setFriendRequests([]);
+        setFriendReceives([]);
         setFriends([]);
       }
     };
@@ -58,23 +63,44 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     void loadFriends();
   }, [user, usersLoading, users]);
 
+  //getPendingRequests
+  const getPendingRequests = () => {
+    if (!user) return [];
+    return friendReceives.filter(
+      r => r.toUserId === user.id && r.status === FriendRequestStatus.Pending
+    );
+  };
+
+  //removeFriend
+  const removeFriend = async (userId: string) => {
+    await friendsService.removeFriend(userId);
+
+    setFriends(friends.filter(f => f.id !== userId));
+    setFriendRequests(friendRequests.filter(r => 
+      !(r.fromUserId === userId || r.toUserId === userId)
+    ));
+    console.log(friends);
+  };
+
+  //SendFriendRequest
   const sendFriendRequest = async (toUserId: string) => {
     if (!user) return;
 
     const toUser = users.find(u => u.id === toUserId);
     if (!toUser) return;
-
+    console.log(friendRequests);
+    
     await friendsService.sendRequest(toUserId);
-
+    
     const newRequest: FriendRequest = {
       id: `fr${Date.now()}`,
       fromUserId: user.id,
-      toUserId,
+      toUserId : toUserId,
       fromUser: user,
       status: FriendRequestStatus.Pending,
       createdAt: new Date().toISOString(),
     };
-
+    
     setFriendRequests([...friendRequests, newRequest]);
   };
 
@@ -101,19 +127,8 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     ));
   };
 
-  const removeFriend = (userId: string) => {
-    setFriends(friends.filter(f => f.id !== userId));
-    setFriendRequests(friendRequests.filter(r => 
-      !(r.fromUserId === userId || r.toUserId === userId)
-    ));
-  };
+  
 
-  const getPendingRequests = () => {
-    if (!user) return [];
-    return friendRequests.filter(
-      r => r.toUserId === user.id && r.status === FriendRequestStatus.Pending
-    );
-  };
 
   const isFriend = (userId: string) => {
     return friends.some(f => f.id === userId);
@@ -132,6 +147,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     <FriendContext.Provider
       value={{
         friendRequests,
+        friendReceives,
         friends,
         sendFriendRequest,
         acceptFriendRequest,

@@ -20,7 +20,7 @@ export const UsersProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setLoading(true);
     try {
       const apiUsers = await usersService.getAll();
-      console.log("API USERS:", apiUsers); // 👈 thêm dòng này
+      // console.log("API USERS:", apiUsers); // 👈 thêm dòng này
 
       setUsers(apiUsers.map((user) => mapApiUserToUser(user)));
     } catch (error) {

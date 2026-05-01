@@ -68,6 +68,15 @@ export interface FriendRequest {
   createdAt: string;
 }
 
+export interface FriendReceive {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  fromUser: User;
+  status: FriendRequestStatus;
+  createdAt: string;
+}
+
 export interface Report {
   id: string;
   postId: string;

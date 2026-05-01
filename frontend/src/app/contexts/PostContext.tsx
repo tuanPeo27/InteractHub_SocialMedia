@@ -71,7 +71,7 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loadPosts();
   }, [usersLoading, user?.id]);
 
-  console.log("posts:", posts);
+  // console.log("posts:", posts);
   const createPost = async (content: string, images: string[], hashtags: string[]) => {
     if (!user) return;
 
