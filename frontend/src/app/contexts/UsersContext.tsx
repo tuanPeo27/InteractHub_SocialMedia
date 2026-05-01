@@ -20,8 +20,12 @@ export const UsersProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setLoading(true);
     try {
       const apiUsers = await usersService.getAll();
+      console.log("API USERS:", apiUsers); // 👈 thêm dòng này
+
       setUsers(apiUsers.map((user) => mapApiUserToUser(user)));
-    } catch {
+    } catch (error) {
+
+      console.error("ERROR USERS:", error); // 👈 thêm dòng này
       setUsers([]);
     } finally {
       setLoading(false);
@@ -29,6 +33,7 @@ export const UsersProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   useEffect(() => {
+
     void refreshUsers();
   }, []);
 

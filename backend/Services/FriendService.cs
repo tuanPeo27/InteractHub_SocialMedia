@@ -20,9 +20,14 @@ public class FriendsService : IFriendsService
 
     public async Task SendRequest(string senderId, string receiverId)
     {
+        if (senderId == receiverId)
+        {
+            throw new Exception("Không thể gửi lời mời cho chính mình");
+        }
         var exist = await _context.FriendShips
             .FirstOrDefaultAsync(x =>
-                x.SenderId == senderId && x.ReceiverId == receiverId);
+                (x.SenderId == senderId && x.ReceiverId == receiverId) ||
+                (x.SenderId == receiverId && x.ReceiverId == senderId));
 
         if (exist != null) throw new Exception("Đã gửi lời mời");
 
@@ -85,5 +90,19 @@ public class FriendsService : IFriendsService
                 ((f.SenderId == user1 && f.ReceiverId == user2) ||
                  (f.SenderId == user2 && f.ReceiverId == user1))
                 && f.Status == FriendStatus.Accepted);
+    }
+
+    public async Task<List<FriendShip>> GetReceivedRequests(string userId)
+    {
+        return await _context.FriendShips
+            .Where(f => f.ReceiverId == userId && f.Status == FriendStatus.Pending)
+            .ToListAsync();
+    }
+
+    public async Task<List<FriendShip>> GetSentRequests(string userId)
+    {
+        return await _context.FriendShips
+            .Where(f => f.SenderId == userId && f.Status == FriendStatus.Pending)
+            .ToListAsync();
     }
 }

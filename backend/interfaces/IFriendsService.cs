@@ -11,6 +11,9 @@ public interface IFriendsService
     Task RejectRequest(int requestId, string userId);
     Task<List<FriendShip>> GetFriends(string userId);
 
+    Task<List<FriendShip>> GetReceivedRequests(string userId);
+    Task<List<FriendShip>> GetSentRequests(string userId);
+
     Task<List<string>> GetFriendIds(string userId);
     Task<bool> IsFriend(string user1, string user2);
 }
