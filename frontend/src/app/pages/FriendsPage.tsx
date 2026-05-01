@@ -10,7 +10,7 @@ import { Badge } from '../components/ui/badge';
 import { toast } from 'sonner';
 
 const FriendsPage: React.FC = () => {
-  const { friends, getPendingRequests, acceptFriendRequest, rejectFriendRequest, removeFriend } = useFriends();
+  const { friends, friendRequests, getPendingRequests, acceptFriendRequest, rejectFriendRequest, removeFriend } = useFriends();
   const pendingRequests = getPendingRequests();
 
   const handleAccept = (requestId: string) => {
@@ -29,7 +29,7 @@ const FriendsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

@@ -21,4 +21,14 @@ export const friendsService = {
     const response = await apiClient.post(`/friends/reject/${id}`);
     return response.data;
   },
+
+  async recieveedRequests() {
+    const response = await apiClient.get<ApiFriendship[]>('/friends/received');
+    return response.data;
+  },
+
+  async removeFriend(userId: string) {
+    const response = await apiClient.delete(`/friends/unfriend/${userId}`);
+    return response.data;
+  }
 };

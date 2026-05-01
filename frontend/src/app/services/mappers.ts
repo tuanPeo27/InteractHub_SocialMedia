@@ -152,6 +152,6 @@ export const toFrontendFriendRequest = (friendship: ApiFriendship, userLookup: M
       bio: '',
       dateOfBirth: null,
     }),
-  status: friendship.Status as FriendRequestStatus,
+  status: friendship.status as FriendRequestStatus,
   createdAt: new Date().toISOString(),
 });

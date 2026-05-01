@@ -43,11 +43,11 @@ const StoryReel: React.FC = () => {
                 </Avatar>
               </div>
             </div>
-            <div className="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white">
-              <Plus className="w-4 h-4 text-white" />
+            <div className="absolute bottom-5 right-0 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white">
+                <Plus className="w-4 h-4 text-white" />
             </div>
             <p className="text-xs mt-1 text-center font-medium">
-              {hasOwnStory ? 'Story của bạn' : 'Tạo story'}
+              {'Tạo story'}
             </p>
           </button>
 

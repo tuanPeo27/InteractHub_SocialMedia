@@ -26,8 +26,9 @@ public class FriendsService : IFriendsService
         }
         var exist = await _context.FriendShips
             .FirstOrDefaultAsync(x =>
-                (x.SenderId == senderId && x.ReceiverId == receiverId) ||
-                (x.SenderId == receiverId && x.ReceiverId == senderId));
+                ((x.SenderId == senderId && x.ReceiverId == receiverId) ||
+                (x.SenderId == receiverId && x.ReceiverId == senderId))
+                && x.Status == FriendStatus.Pending);
 
         if (exist != null) throw new Exception("Đã gửi lời mời");
 
