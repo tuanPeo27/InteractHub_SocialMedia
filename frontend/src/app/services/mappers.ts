@@ -64,12 +64,12 @@ export const toFrontendPost = (
   const likeInfo = likeLookup.get(apiPost.id);
   const likes = likeInfo
     ? [
-        ...(likeInfo.isLiked && currentUserId ? [currentUserId] : []),
-        ...Array.from(
-          { length: Math.max(likeInfo.totalLikes - (likeInfo.isLiked && currentUserId ? 1 : 0), 0) },
-          (_, index) => `like-${apiPost.id}-${index}`,
-        ),
-      ]
+      ...(likeInfo.isLiked && currentUserId ? [currentUserId] : []),
+      ...Array.from(
+        { length: Math.max(likeInfo.totalLikes - (likeInfo.isLiked && currentUserId ? 1 : 0), 0) },
+        (_, index) => `like-${apiPost.id}-${index}`,
+      ),
+    ]
     : [];
 
   const user = userLookup.get(apiPost.userId) || mapApiUserToUser({

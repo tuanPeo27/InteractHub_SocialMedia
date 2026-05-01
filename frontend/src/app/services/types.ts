@@ -65,12 +65,20 @@ export interface ApiComment {
   postId: number;
   createdAt: string;
 }
+export type LikeUser = {
+  userId: string;
+  userName: string;
+  avatar: string;
+  likedAt: string;
+};
 
 export interface ApiLikeInfo {
   postId: number;
   totalLikes: number;
   isLiked: boolean;
+  users: LikeUser[];
 }
+
 
 export interface ApiFriendship {
   id: number;

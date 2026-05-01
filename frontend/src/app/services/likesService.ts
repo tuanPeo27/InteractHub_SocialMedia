@@ -11,4 +11,11 @@ export const likesService = {
     const response = await apiClient.get<ApiLikeInfo>(`/Like/${postId}`);
     return response.data;
   },
+
+  async getLikeDetail(postId: string) {
+    const response = await apiClient.get<ApiLikeInfo>(`Like/${postId}/details`);
+    return response.data;
+
+
+  },
 };
