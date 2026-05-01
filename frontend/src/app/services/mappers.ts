@@ -34,7 +34,9 @@ export const mapAuthUserToUser = (
   createdAt: existingUser?.createdAt || new Date().toISOString(),
 });
 
-export const extractHashtags = (content: string) => {
+export const extractHashtags = (content?: string) => {
+  if (!content) return [];
+
   const matches = content.match(/#(\w+)/g);
   return matches ? matches.map((tag) => tag.slice(1)) : [];
 };
@@ -98,7 +100,6 @@ export const toFrontendPost = (
     updatedAt: apiPost.updatedAt,
   };
 };
-
 export const toFrontendStory = (apiStory: ApiStory, userLookup: Map<string, User>): Story => ({
   id: String(apiStory.id),
   userId: apiStory.userId,

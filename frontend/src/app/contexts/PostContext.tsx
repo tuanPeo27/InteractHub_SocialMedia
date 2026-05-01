@@ -31,15 +31,13 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { users, loading: usersLoading } = useUsers();
 
   useEffect(() => {
+    if (usersLoading) return;
+
     const loadPosts = async () => {
-      if (usersLoading) {
-        return;
-      }
-
       setLoading(true);
-
       try {
         const apiPosts = await postsService.getFeed();
+
         const details = await Promise.all(
           apiPosts.map(async (post) => ({
             post,
@@ -48,9 +46,9 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           })),
         );
 
-        const userLookup = new Map(users.map((item) => [item.id, item] as const));
-        const commentLookup = new Map<number, ApiComment[]>();
-        const likeLookup = new Map<number, ApiLikeInfo>();
+        const userLookup = new Map(users.map(u => [u.id, u]));
+        const commentLookup = new Map();
+        const likeLookup = new Map();
 
         details.forEach((detail) => {
           commentLookup.set(detail.post.id, detail.comments);
@@ -59,17 +57,21 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         });
 
-        setPosts(apiPosts.map((post) => toFrontendPost(post, userLookup, commentLookup, likeLookup, user?.id)));
-      } catch {
+        setPosts(apiPosts.map(post =>
+          toFrontendPost(post, userLookup, commentLookup, likeLookup, user?.id)
+        ));
+      } catch (err) {
+        console.error(err);
         setPosts([]);
       } finally {
         setLoading(false);
       }
     };
 
-    void loadPosts();
-  }, [user?.id, users.length, usersLoading]);
+    loadPosts();
+  }, [usersLoading, user?.id]);
 
+  console.log("posts:", posts);
   const createPost = async (content: string, images: string[], hashtags: string[]) => {
     if (!user) return;
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const DEFAULT_API_BASE_URL = 'http://26.248.122.134:5052/api';
+const DEFAULT_API_BASE_URL = 'http:///26.248.122.134:5052/api';
 const AUTH_TOKEN_KEY = 'authToken';
 const CURRENT_USER_KEY = 'currentUser';
 
