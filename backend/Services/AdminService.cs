@@ -12,11 +12,16 @@ public class AdminService : IAdminService
 {
     private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
-    public AdminService(AppDbContext context, UserManager<ApplicationUser> userManager)
+    public AdminService(
+        AppDbContext context,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole> roleManager)
     {
         _context = context;
         _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     public async Task<IEnumerable<ReportResponse>> GetReportsAsync()
@@ -67,14 +72,49 @@ public class AdminService : IAdminService
 
     public async Task<IEnumerable<UserDto>> GetUsersAsync()
     {
-        return await _userManager.Users
-            .Select(u => new UserDto
+        var users = await _userManager.Users.ToListAsync();
+        var results = new List<UserDto>();
+
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            results.Add(new UserDto
             {
-                Id = u.Id,
-                UserName = u.UserName,
-                Email = u.Email,
-                IsLocked = u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.Now
-            })
-            .ToListAsync();
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                IsLocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.Now,
+                Roles = roles.ToList(),
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+                Avatar = user.Avatar,
+                Bio = user.Bio,
+                DateOfBirth = user.DateOfBirth,
+            });
+        }
+
+        return results;
+    }
+
+    public async Task<bool> SetUserRoleAsync(string userId, string roleName)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return false;
+
+        if (!await _roleManager.RoleExistsAsync(roleName))
+        {
+            var createRole = await _roleManager.CreateAsync(new IdentityRole(roleName));
+            if (!createRole.Succeeded) return false;
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        if (roles.Count > 0)
+        {
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, roles);
+            if (!removeResult.Succeeded) return false;
+        }
+
+        var addResult = await _userManager.AddToRoleAsync(user, roleName);
+        return addResult.Succeeded;
     }
 }

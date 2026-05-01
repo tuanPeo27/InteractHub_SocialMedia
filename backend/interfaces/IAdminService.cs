@@ -7,4 +7,5 @@ public interface IAdminService
     Task<bool> BanUserAsync(string userId);
     Task<bool> UnbanUserAsync(string userId);
     Task<IEnumerable<UserDto>> GetUsersAsync();
+    Task<bool> SetUserRoleAsync(string userId, string roleName);
 }
