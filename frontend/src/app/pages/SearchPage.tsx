@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import PostCard from '../components/PostCard';
 import TrendingHashtags from '../components/TrendingHashtags';
-import FriendSuggestions from '../components/FriendSuggestions';
+import FriendSearch from '../components/FriendSearch';
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -80,7 +80,7 @@ const SearchPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="suggestions" className="mt-6">
-            <FriendSuggestions />
+            <FriendSearch />
           </TabsContent>
         </Tabs>
       )}

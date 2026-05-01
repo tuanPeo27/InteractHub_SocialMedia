@@ -30,5 +30,10 @@ export const friendsService = {
   async removeFriend(userId: string) {
     const response = await apiClient.delete(`/friends/unfriend/${userId}`);
     return response.data;
+  },
+
+  async sentRequests() {
+    const response = await apiClient.get<ApiFriendship[]>('/friends/sent');
+    return response.data;
   }
 };

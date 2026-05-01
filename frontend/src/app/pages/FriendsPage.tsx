@@ -76,6 +76,7 @@ const FriendsPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleRemoveFriend(friend.id)}
+                        className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600"
                       >
                         <UserMinus className="w-4 h-4 mr-2" />
                         Hủy kết bạn

@@ -39,6 +39,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       try {
         const friendships = await friendsService.getAll();
         const pendingRequests = await friendsService.recieveedRequests();
+        const sentRequests = await friendsService.sentRequests();
         // console.log(pendingRequests);
         const userLookup = new Map(users.map((item) => [item.id, item] as const));
 
@@ -53,6 +54,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setFriendReceives(pendingRequests
           .map((friendship) => toFrontendFriendRequest(friendship, userLookup))
         );
+        setFriendRequests(sentRequests.map((sentRequests) => toFrontendFriendRequest(sentRequests, userLookup)));
       } catch {
         setFriendRequests([]);
         setFriendReceives([]);
@@ -79,7 +81,6 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setFriendRequests(friendRequests.filter(r => 
       !(r.fromUserId === userId || r.toUserId === userId)
     ));
-    console.log(friends);
   };
 
   //SendFriendRequest
@@ -88,7 +89,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     const toUser = users.find(u => u.id === toUserId);
     if (!toUser) return;
-    console.log(friendRequests);
+    // console.log(friendRequests);
     
     await friendsService.sendRequest(toUserId);
     
@@ -104,13 +105,14 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setFriendRequests([...friendRequests, newRequest]);
   };
 
+  
   const acceptFriendRequest = async (requestId: string) => {
-    const request = friendRequests.find(r => r.id === requestId);
+    const request = friendReceives.find(r => r.id === requestId);
     if (!request) return;
 
     await friendsService.accept(requestId);
 
-    setFriendRequests(friendRequests.map(r =>
+    setFriendReceives(friendReceives.map(r =>
       r.id === requestId ? { ...r, status: FriendRequestStatus.Accepted as const } : r
     ));
 
@@ -122,13 +124,10 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const rejectFriendRequest = async (requestId: string) => {
     await friendsService.reject(requestId);
-    setFriendRequests(friendRequests.map(r =>
+    setFriendReceives(friendReceives.map(r =>
       r.id === requestId ? { ...r, status: FriendRequestStatus.Rejected as const } : r
     ));
   };
-
-  
-
 
   const isFriend = (userId: string) => {
     return friends.some(f => f.id === userId);
