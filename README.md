@@ -1,11 +1,5 @@
 # 🚀 InteractHub – Social Media Web Application
 
-![GitHub repo size](https://img.shields.io/github/repo-size/yourusername/interacthub)
-![GitHub stars](https://img.shields.io/github/stars/yourusername/interacthub)
-![GitHub forks](https://img.shields.io/github/forks/yourusername/interacthub)
-![GitHub issues](https://img.shields.io/github/issues/yourusername/interacthub)
-![GitHub license](https://img.shields.io/github/license/yourusername/interacthub)
-
 A **full-stack social media web application** built with **React, TypeScript, ASP.NET Core, and SQL Server**.
 This project demonstrates modern web development practices including **RESTful API design, authentication, real-time communication, testing, and cloud deployment**.
 
@@ -274,7 +268,7 @@ dotnet run
 Backend runs at:
 
 ```
-http://localhost:5000
+http://localhost:5052
 ```
 
 ---
@@ -311,8 +305,10 @@ Through this project, the following skills were developed:
 
 # 👨‍💻 Author
 
-Student: **Your Name**
-Course: **C# and .NET Development**
+Student: **Anh Tuấn**, **Anh Kỳ**, **Thanh Văn**, **Kiến Văn**, **Hoàng Văn**
+
+Course: **C# Programing Language**
+
 University: **Saigon University**
 
 ---

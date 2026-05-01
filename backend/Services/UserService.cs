@@ -16,7 +16,6 @@ public class UserService : IUserService
         _userManager = userManager;
     }
 
-    // 🔥 GET CURRENT USER
     public async Task<UserResponse?> GetCurrentUser(ClaimsPrincipal user)
     {
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -35,7 +34,6 @@ public class UserService : IUserService
         };
     }
 
-    // 🔥 GET ALL USERS
     public IEnumerable<UserResponse> GetAll()
     {
         return _userManager.Users.Select(u => new UserResponse
@@ -46,7 +44,6 @@ public class UserService : IUserService
         }).ToList();
     }
 
-    // 🔥 GET USER BY ID
     public async Task<UserResponse?> GetById(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
@@ -61,7 +58,6 @@ public class UserService : IUserService
         };
     }
 
-    // 🔥 UPDATE CURRENT USER
     public async Task<ServiceResponse> UpdateCurrentUser(ClaimsPrincipal user, UpdateUserRequest model)
     {
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -114,7 +110,6 @@ public class UserService : IUserService
         };
     }
 
-    // 🔥 DELETE USER
     public async Task<ServiceResponse> Delete(string id)
     {
         var user = await _userManager.FindByIdAsync(id);

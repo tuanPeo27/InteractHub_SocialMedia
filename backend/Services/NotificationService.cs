@@ -19,7 +19,6 @@ public class NotificationService : INotificationService
         _hub = hub;
     }
 
-    // 🔥 MAP FUNCTION
     private NotificationResponse Map(Notification n)
     {
         return new NotificationResponse
@@ -34,7 +33,6 @@ public class NotificationService : INotificationService
         };
     }
 
-    // 🔥 CREATE
     public async Task<NotificationResponse> Create(CreateNotificationRequest request)
     {
         var notification = new Notification
@@ -57,7 +55,6 @@ public class NotificationService : INotificationService
         return dto;
     }
 
-    // ✅ GET ALL theo user
     public async Task<List<NotificationResponse>> GetByUser(string userId)
     {
         return await _context.Notifications
@@ -77,7 +74,6 @@ public class NotificationService : INotificationService
             .ToListAsync();
     }
 
-    // 🔐 MARK AS READ (fix bảo mật)
     public async Task<bool> MarkAsRead(int id, string userId)
     {
         var notification = await _context.Notifications
@@ -93,7 +89,6 @@ public class NotificationService : INotificationService
         return true;
     }
 
-    // 🔐 DELETE (fix bảo mật)
     public async Task<bool> Delete(int id, string userId)
     {
         var notification = await _context.Notifications

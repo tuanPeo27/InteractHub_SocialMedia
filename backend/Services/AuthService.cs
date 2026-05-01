@@ -62,7 +62,6 @@ public class AuthService : IAuthService
         return $"{baseUrl.TrimEnd('/')}{path}?email={safeEmail}&token={safeToken}";
     }
 
-    // 🔥 MAP USER (optional nhưng nên có)
     private object MapAuthData(ApplicationUser user, string token, IList<string> roles)
     {
         return new
@@ -76,7 +75,6 @@ public class AuthService : IAuthService
         };
     }
 
-    // ✅ LOGIN
     public async Task<AuthResponse> Login(LoginModel model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
@@ -122,7 +120,6 @@ public class AuthService : IAuthService
         };
     }
 
-    // ✅ REGISTER
     public async Task<AuthResponse> Register(RegisterModel model)
     {
         const string defaultRole = "User";

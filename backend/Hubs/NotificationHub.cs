@@ -16,7 +16,6 @@ public class NotificationHub : Hub<INotificationClient>
 {
     public override async Task OnConnectedAsync()
     {
-        // Ensures UserIdentifier is populated; see SubClaimUserIdProvider.
         if (string.IsNullOrEmpty(Context.UserIdentifier))
         {
             Context.Abort();
