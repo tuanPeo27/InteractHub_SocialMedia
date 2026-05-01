@@ -135,10 +135,26 @@ public class AuthService : IAuthService
             };
         }
 
+        if (!string.IsNullOrWhiteSpace(model.UserName))
+        {
+            var usernameExist = await _userManager.FindByNameAsync(model.UserName);
+            if (usernameExist != null)
+            {
+                return new AuthResponse
+                {
+                    success = false,
+                    message = "Tên người dùng đã tồn tại"
+                };
+            }
+        }
+
+        var normalizedUserName = string.IsNullOrWhiteSpace(model.UserName) ? model.Email : model.UserName;
+
         var user = new ApplicationUser
         {
-            UserName = model.Email,
-            Email = model.Email
+            UserName = normalizedUserName,
+            Email = model.Email,
+            FullName = string.IsNullOrWhiteSpace(model.FullName) ? null : model.FullName
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
