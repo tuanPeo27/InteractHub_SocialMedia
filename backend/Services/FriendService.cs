@@ -105,4 +105,22 @@ public class FriendsService : IFriendsService
             .Where(f => f.SenderId == userId && f.Status == FriendStatus.Pending)
             .ToListAsync();
     }
+
+    public async Task UnfriendAsync(string userId, string friendId)
+    {
+        if (userId == friendId)
+            throw new Exception("Không hợp lệ");
+
+        var friendship = await _context.FriendShips
+            .FirstOrDefaultAsync(x =>
+                ((x.SenderId == userId && x.ReceiverId == friendId) ||
+                 (x.SenderId == friendId && x.ReceiverId == userId))
+                && x.Status == FriendStatus.Accepted);
+
+        if (friendship == null)
+            throw new Exception("Hai người chưa phải bạn bè");
+
+        _context.FriendShips.Remove(friendship);
+        await _context.SaveChangesAsync();
+    }
 }

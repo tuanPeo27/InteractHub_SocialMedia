@@ -71,4 +71,15 @@ public class FriendsController : ControllerBase
         var requests = await _service.GetSentRequests(userId);
         return Ok(requests);
     }
+
+    [Authorize]
+    [HttpDelete("unfriend/{id}")]
+    public async Task<IActionResult> Unfriend(string id)
+    {
+        var userId = GetUserId();
+
+        await _service.UnfriendAsync(userId, id);
+
+        return Ok("Đã hủy kết bạn");
+    }
 }
