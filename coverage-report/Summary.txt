@@ -1,0 +1,26 @@
+Summary
+  Generated on: 4/30/2026 - 10:25:13 AM
+  Coverage date: 4/30/2026 - 10:14:37 AM
+  Parser: Cobertura
+  Assemblies: 1
+  Classes: 4
+  Files: 4
+  Line coverage: 74.6%
+  Covered lines: 357
+  Uncovered lines: 121
+  Coverable lines: 478
+  Total lines: 716
+  Branch coverage: 60.8% (73 of 120)
+  Covered branches: 73
+  Total branches: 120
+  Method coverage: 86.6% (26 of 30)
+  Full method coverage: 60% (18 of 30)
+  Covered methods: 26
+  Fully covered methods: 18
+  Total methods: 30
+
+backend                                  74.6%
+  backend.Services.AuthService           70.3%
+  backend.Services.NotificationService    100%
+  backend.Services.PostsService          69.2%
+  backend.Services.UserService             72%
