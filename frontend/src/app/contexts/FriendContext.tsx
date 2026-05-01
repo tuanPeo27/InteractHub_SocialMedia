@@ -39,7 +39,7 @@ export const FriendProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
         const nextFriends = friendships
           .map((friendship) => {
-            const friendId = friendship.SenderId === user.id ? friendship.ReceiverId : friendship.SenderId;
+            const friendId = friendship.senderId === user.id ? friendship.receiverId : friendship.senderId;
             return userLookup.get(friendId);
           })
           .filter((friend): friend is User => Boolean(friend));

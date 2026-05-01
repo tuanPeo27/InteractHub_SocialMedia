@@ -143,7 +143,7 @@ const AdminPage: React.FC = () => {
   }
 
   const reportStats = useMemo(() => {
-    const reviewed = reports.filter((report) => reviewedReports.has(report.Id)).length;
+    const reviewed = reports.filter((report) => reviewedReports.has(report.id)).length;
     return {
       total: reports.length,
       reviewed,
@@ -266,22 +266,22 @@ const AdminPage: React.FC = () => {
           ) : reports.length > 0 ? (
             <div className="space-y-4">
               {reports.map((report) => {
-                const post = reportPostLookup.get(report.PostId);
+                const post = reportPostLookup.get(report.postId);
                 if (!post) return null;
-                const isReviewed = reviewedReports.has(report.Id);
+                const isReviewed = reviewedReports.has(report.id);
 
                 return (
-                  <div key={report.Id} className="border rounded-lg p-4 space-y-3">
+                  <div key={report.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
                         <Badge variant={isReviewed ? 'secondary' : 'destructive'}>
                           {isReviewed ? 'Đã xem xét' : 'Chờ xử lý'}
                         </Badge>
                         <p className="text-sm text-gray-600 mt-2">
-                          Lý do: {report.Reason}
+                          Lý do: {report.reason}
                         </p>
                         <p className="text-xs text-gray-400">
-                          Báo cáo bởi: {report.UserName}
+                          Báo cáo bởi: {report.userName}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -290,7 +290,7 @@ const AdminPage: React.FC = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleMarkReviewed(report.Id)}
+                              onClick={() => handleMarkReviewed(report.id)}
                             >
                               <Eye className="w-4 h-4 mr-2" />
                               Đã xem
@@ -298,7 +298,7 @@ const AdminPage: React.FC = () => {
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => handleRemovePost(report.PostId)}
+                              onClick={() => handleRemovePost(report.postId)}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
                               Xóa
