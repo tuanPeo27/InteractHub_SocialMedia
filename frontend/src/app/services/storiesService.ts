@@ -3,12 +3,12 @@ import { ApiStory } from './types';
 
 export const storiesService = {
   async getFeed() {
-    const response = await apiClient.get<ApiStory[]>('/stories/feed');
+    const response = await apiClient.get<ApiStory[]>('/Stories/feed');
     return response.data;
   },
 
   async create(imageUrl: string) {
-    const response = await apiClient.post<ApiStory>('/stories', {
+    const response = await apiClient.post<ApiStory>('/Stories', {
       imageUrl,
       visibility: 0,
     });
@@ -16,7 +16,7 @@ export const storiesService = {
   },
 
   async delete(id: string) {
-    const response = await apiClient.delete(`/stories/${id}`);
+    const response = await apiClient.delete(`/Stories/${id}`);
     return response.data;
   },
 };
