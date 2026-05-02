@@ -15,6 +15,7 @@ interface PostContextType {
   likePost: (postId: string) => Promise<void>;
   unlikePost: (postId: string) => Promise<void>;
   addComment: (postId: string, content: string) => Promise<void>;
+  deleteComment: (postId: string, commentId: string) => Promise<void>;
   sharePost: (postId: string) => void;
   deletePost: (postId: string) => Promise<void>;
   getPostById: (postId: string) => Post | undefined;
@@ -131,6 +132,17 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }));
   };
 
+  const deleteComment = async (postId: string, commentId: string) => {
+    await commentsService.delete(commentId);
+    setPosts((current) => current.map((post) => {
+      if (post.id === postId) {
+        return { ...post, comments: post.comments.filter((c) => c.id !== commentId) };
+      }
+
+      return post;
+    }));
+  };
+
   const sharePost = (postId: string) => {
     setPosts((current) => current.map((post) => {
       if (post.id === postId) {
@@ -172,6 +184,7 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         likePost,
         unlikePost,
         addComment,
+        deleteComment,
         sharePost,
         deletePost,
         getPostById,
