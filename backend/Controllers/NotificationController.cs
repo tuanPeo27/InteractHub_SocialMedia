@@ -82,4 +82,20 @@ public class NotificationController : ControllerBase
 
         return Ok(new { message = "Đã xóa" });
     }
+
+    [HttpDelete]
+    [Authorize]
+    public async Task<IActionResult> DeleteAll()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var deletedCount = await _service.DeleteAll(userId);
+
+        return Ok(new { message = "Đã xóa tất cả", deletedCount });
+    }
 }

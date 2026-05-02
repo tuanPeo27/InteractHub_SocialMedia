@@ -77,7 +77,7 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!user) return;
 
     const imageUrl = images[0] || null;
-    const serverContent = hashtags.length > 0 ? `${content} ${hashtags.map((tag) => `#${tag}`).join(' ')}` : content;
+    const serverContent = content.trim();
     const createdPost = await postsService.create(serverContent, imageUrl);
     const userLookup = new Map(users.map((item) => [item.id, item] as const));
     const nextPost = toFrontendPost(createdPost, userLookup, new Map<number, ApiComment[]>(), new Map<number, ApiLikeInfo>(), user.id);
@@ -154,8 +154,15 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const deletePost = async (postId: string) => {
-    await postsService.delete(postId);
+    const previousPosts = posts;
     setPosts((current) => current.filter((post) => post.id !== postId));
+
+    try {
+      await postsService.delete(postId);
+    } catch (error) {
+      setPosts(previousPosts);
+      throw error;
+    }
   };
 
   const getPostById = (postId: string) => posts.find((post) => post.id === postId);

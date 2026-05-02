@@ -5,6 +5,31 @@ export const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1771050889377-b
 
 const displayNameFromEmail = (email?: string | null) => email?.split('@')[0] || 'Người dùng';
 
+const toFriendRequestStatus = (status: string | number): FriendRequestStatus => {
+  if (typeof status === 'number') {
+    switch (status) {
+      case FriendRequestStatus.Accepted:
+        return FriendRequestStatus.Accepted;
+      case FriendRequestStatus.Rejected:
+        return FriendRequestStatus.Rejected;
+      default:
+        return FriendRequestStatus.Pending;
+    }
+  }
+
+  const normalized = status.toLowerCase();
+
+  if (normalized === 'accepted') {
+    return FriendRequestStatus.Accepted;
+  }
+
+  if (normalized === 'rejected') {
+    return FriendRequestStatus.Rejected;
+  }
+
+  return FriendRequestStatus.Pending;
+};
+
 export const mapApiUserToUser = (apiUser: ApiUser, fallbackRole?: string): User => ({
   id: apiUser.id,
   username: apiUser.userName || displayNameFromEmail(apiUser.email),
@@ -116,26 +141,31 @@ export const toFrontendStory = (apiStory: ApiStory, userLookup: Map<string, User
   views: [],
 });
 
-export const toFrontendNotification = (notification: ApiNotification, userLookup: Map<string, User>): Notification => ({
-  id: String(notification.id),
-  userId: notification.fromUserId || '',
-  fromUser:
-    (notification.fromUserId && userLookup.get(notification.fromUserId)) ||
-    mapApiUserToUser({
-      id: notification.fromUserId || 'system',
-      userName: notification.fromUserName || 'system',
-      email: `${notification.fromUserId || 'system'}@interacthub.local`,
-      fullName: notification.fromUserName || 'Hệ thống',
-      avatar: DEFAULT_AVATAR,
-      bio: '',
-      dateOfBirth: null,
-    }),
-  type: (notification.type as Notification['type']) || 'like',
-  postId: undefined,
-  message: notification.content,
-  read: notification.isRead,
-  createdAt: notification.createdAt,
-});
+export const toFrontendNotification = (notification: ApiNotification, userLookup: Map<string, User>): Notification => {
+  const fromUser = notification.fromUserId && userLookup.get(notification.fromUserId);
+  
+  return {
+    id: String(notification.id),
+    userId: notification.fromUserId || '',
+    fromUser:
+      fromUser ||
+      mapApiUserToUser({
+        id: notification.fromUserId || 'system',
+        userName: notification.fromUserName || 'system',
+        email: `${notification.fromUserId || 'system'}@interacthub.local`,
+        fullName: (notification as any).fromUserFullName || notification.fromUserName || 'Hệ thống',
+        avatar: (notification as any).fromUserAvatar || DEFAULT_AVATAR,
+        bio: '',
+        dateOfBirth: null,
+      }),
+    type: (notification.type as Notification['type']) || 'like',
+    postId: undefined,
+    url: (notification as any).url || undefined,
+    message: notification.content,
+    read: notification.isRead,
+    createdAt: notification.createdAt,
+  };
+};
 
 export const toFrontendFriendRequest = (friendship: ApiFriendship, userLookup: Map<string, User>): FriendRequest => ({
   id: String(friendship.id),
@@ -152,6 +182,6 @@ export const toFrontendFriendRequest = (friendship: ApiFriendship, userLookup: M
       bio: '',
       dateOfBirth: null,
     }),
-  status: friendship.status as FriendRequestStatus,
+  status: toFriendRequestStatus(friendship.status),
   createdAt: new Date().toISOString(),
 });

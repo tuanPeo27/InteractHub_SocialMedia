@@ -1,5 +1,5 @@
 import { apiClient } from './http';
-import { ApiLikeInfo } from './types';
+import { ApiLikeDetail, ApiLikeInfo } from './types';
 
 export const likesService = {
   async toggle(postId: string) {
@@ -13,9 +13,7 @@ export const likesService = {
   },
 
   async getLikeDetail(postId: string) {
-    const response = await apiClient.get<ApiLikeInfo>(`Like/${postId}/details`);
+    const response = await apiClient.get<ApiLikeDetail>(`/Like/${postId}/details`);
     return response.data;
-
-
   },
 };

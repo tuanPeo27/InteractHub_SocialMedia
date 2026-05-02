@@ -9,6 +9,8 @@ public class NotificationResponse
 
     public string? FromUserId { get; set; }
     public string? FromUserName { get; set; }
+    public string? FromUserFullName { get; set; }
+    public string? FromUserAvatar { get; set; }
 
     public string? Type { get; set; }
 }

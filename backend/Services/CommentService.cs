@@ -10,11 +10,13 @@ public class CommentService : ICommentService
 {
     private readonly AppDbContext _context;
     private readonly IPrivacyService _privacyService;
+    private readonly INotificationService _notificationService;
 
-    public CommentService(AppDbContext context, IPrivacyService privacyService)
+    public CommentService(AppDbContext context, IPrivacyService privacyService, INotificationService notificationService)
     {
         _context = context;
         _privacyService = privacyService;
+        _notificationService = notificationService;
     }
 
     public async Task<CommentResponse> CreateAsync(string userId, CreateCommentRequest dto)
@@ -37,6 +39,20 @@ public class CommentService : ICommentService
 
         _context.Comments.Add(comment);
         await _context.SaveChangesAsync();
+
+        // Create notification for the post owner (only if the commenter is not the post owner)
+        if (post.UserId != userId)
+        {
+            var commenterUser = await _context.Users.FindAsync(userId);
+            var notificationRequest = new CreateNotificationRequest
+            {
+                UserId = post.UserId,
+                FromUserId = userId,
+                Content = $"{commenterUser?.FullName ?? commenterUser?.UserName} đã bình luận trên bài viết của bạn",
+                Type = "comment"
+            };
+            await _notificationService.Create(notificationRequest);
+        }
 
         return Map(comment);
     }

@@ -2,15 +2,16 @@ import React from 'react';
 import { Link } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { Bell, Heart, MessageCircle, UserPlus, Share2 } from 'lucide-react';
+import { Bell, Heart, MessageCircle, UserPlus, Share2, Trash2 } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationContext';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { cn } from '../components/ui/utils';
+import { toast } from 'sonner';
 
 const NotificationsPage: React.FC = () => {
-  const { notifications, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications } = useNotifications();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -36,11 +37,25 @@ const NotificationsPage: React.FC = () => {
             <Bell className="w-5 h-5" />
             Thông báo
           </CardTitle>
-          {notifications.some(n => !n.read) && (
-            <Button variant="outline" size="sm" onClick={markAllAsRead}>
-              Đánh dấu đã đọc tất cả
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {notifications.some(n => !n.read) && (
+              <Button variant="outline" size="sm" onClick={markAllAsRead}>
+                Đánh dấu đã đọc tất cả
+              </Button>
+            )}
+            {notifications.length > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={async () => {
+                  const deletedCount = await deleteAllNotifications();
+                  toast.success(`Đã xóa ${deletedCount} thông báo`);
+                }}
+              >
+                Xóa tất cả
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {notifications.length > 0 ? (
@@ -79,14 +94,28 @@ const NotificationsPage: React.FC = () => {
                         {getNotificationIcon(notification.type)}
                       </div>
 
-                      {notification.postId && (
-                        <Link 
-                          to="/" 
-                          className="text-xs text-blue-600 hover:underline mt-2 inline-block"
+                      <div className="mt-2 flex items-center gap-3">
+                        {notification.url && (
+                          <Link
+                            to={notification.url}
+                            className="text-xs text-blue-600 hover:underline inline-block"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Mở
+                          </Link>
+                        )}
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700 hover:underline"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void deleteNotification(notification.id);
+                          }}
                         >
-                          Xem bài viết
-                        </Link>
-                      )}
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Xóa
+                        </button>
+                      </div>
                     </div>
 
                     {!notification.read && (

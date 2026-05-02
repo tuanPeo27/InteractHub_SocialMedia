@@ -13,4 +13,6 @@ public interface INotificationService
     Task<bool> MarkAsRead(int id, string userId);
 
     Task<bool> Delete(int id, string userId);
+
+    Task<int> DeleteAll(string userId);
 }
