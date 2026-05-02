@@ -69,7 +69,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
 
     const setupSignalR = async () => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5052';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://26.248.122.134:5052';
       const hubUrl = `${apiUrl}/hubs/notifications`;
 
       const connection = await signalRService.connect(hubUrl);
