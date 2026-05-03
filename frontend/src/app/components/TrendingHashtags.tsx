@@ -8,7 +8,9 @@ const TrendingHashtags: React.FC = () => {
   const { posts } = usePosts();
 
   const hashtagCounts = posts.reduce((acc, post) => {
-    post.hashtags.forEach((tag) => {
+    const uniqueTags = new Set(post.hashtags);
+
+    uniqueTags.forEach((tag) => {
       acc[tag] = (acc[tag] || 0) + 1;
     });
 

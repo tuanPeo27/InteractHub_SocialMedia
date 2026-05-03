@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useStories } from '../contexts/StoryContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
-import { Dialog, DialogContent } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import StoryViewer from './StoryViewer';
 import CreateStoryDialog from './CreateStoryDialog';
 
@@ -82,8 +83,17 @@ const StoryReel: React.FC = () => {
       </div>
 
       {/* Story Viewer Dialog */}
-      <Dialog open={selectedStoryIndex !== null} onOpenChange={(open) => !open && setSelectedStoryIndex(null)}>
+      <Dialog
+        open={selectedStoryIndex !== null}
+        onOpenChange={(open) => !open && setSelectedStoryIndex(null)}
+      >
         <DialogContent className="max-w-md p-0 bg-black">
+          <DialogHeader>
+            <VisuallyHidden>
+              <DialogTitle>Xem story</DialogTitle>
+            </VisuallyHidden>
+          </DialogHeader>
+
           {selectedStoryIndex !== null && (
             <StoryViewer
               storyGroups={userStoryGroups}

@@ -29,6 +29,8 @@ export interface ApiUser {
   avatar?: string | null;
   bio?: string | null;
   dateOfBirth?: string | null;
+  phoneNumber?: string | null;
+  createdAt: string;
 }
 
 export interface ApiPost {

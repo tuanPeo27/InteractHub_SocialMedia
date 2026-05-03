@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Badge } from '../components/ui/badge';
 import { toast } from 'sonner';
+import FriendList from '../components/FriendList';
 
 const FriendsPage: React.FC = () => {
   const { friends, friendRequests, getPendingRequests, acceptFriendRequest, rejectFriendRequest, removeFriend } = useFriends();
@@ -53,44 +54,11 @@ const FriendsPage: React.FC = () => {
             </TabsList>
 
             <TabsContent value="friends" className="mt-6">
-              <div className="space-y-3">
-                {friends.length > 0 ? (
-                  friends.map((friend) => (
-                    <div key={friend.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg">
-                      <Link to={`/profile/${friend.id}`}>
-                        <Avatar className="w-14 h-14">
-                          <AvatarImage src={friend.avatar} alt={friend.fullName} />
-                          <AvatarFallback>{friend.fullName[0]}</AvatarFallback>
-                        </Avatar>
-                      </Link>
-                      <div className="flex-1 min-w-0">
-                        <Link to={`/profile/${friend.id}`} className="font-medium hover:underline block">
-                          {friend.fullName}
-                        </Link>
-                        <p className="text-sm text-gray-500">@{friend.username}</p>
-                        {/* <p className="text-xs text-gray-400 mt-1">
-                          {friend.followers} người theo dõi
-                        </p> */}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRemoveFriend(friend.id)}
-                        className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600"
-                      >
-                        <UserMinus className="w-4 h-4 mr-2" />
-                        Hủy kết bạn
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p>Chưa có bạn bè nào</p>
-                    <p className="text-sm mt-2">Hãy gửi lời mời kết bạn cho những người bạn quan tâm!</p>
-                  </div>
-                )}
-              </div>
+              <FriendList
+                friends={friends}
+                onRemoveFriend={handleRemoveFriend}
+                emptyMessage="Chưa có bạn bè"
+              />
             </TabsContent>
 
             <TabsContent value="requests" className="mt-6">
@@ -109,9 +77,6 @@ const FriendsPage: React.FC = () => {
                           {request.fromUser.fullName}
                         </Link>
                         <p className="text-sm text-gray-500">@{request.fromUser.username}</p>
-                        {/* <p className="text-xs text-gray-400 mt-1">
-                          {request.fromUser.followers} người theo dõi
-                        </p> */}
                       </div>
                       <div className="flex gap-2">
                         <Button

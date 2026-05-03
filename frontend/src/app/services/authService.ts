@@ -51,8 +51,10 @@ export const authService = {
       fullName: data.fullName,
       bio: data.bio,
       avatar: data.avatar,
-      dateOfBirth: null,
+      phoneNumber: data.phoneNumber,
+      dateOfBirth: data.dateOfBirth || null,
     });
+
     return response.data;
   },
 };

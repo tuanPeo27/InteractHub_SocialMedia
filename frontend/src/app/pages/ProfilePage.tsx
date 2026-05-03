@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import PostCard from '../components/PostCard';
 import EditProfileDialog from '../components/EditProfileDialog';
 import { toast } from 'sonner';
+import FriendList from '../components/FriendList';
 
 const ProfilePage: React.FC = () => {
   const { userId } = useParams();
@@ -74,7 +75,7 @@ const ProfilePage: React.FC = () => {
                 </div>
 
                 {isOwnProfile ? (
-                  <Button onClick={() => setShowEditProfile(true)} className="md:ml-auto">
+                  <Button onClick={() => setShowEditProfile(true)} className="md:ml-auto cursor-pointer">
                     <Settings className="w-4 h-4 mr-2" />
                     Chỉnh sửa
                   </Button>
@@ -82,7 +83,7 @@ const ProfilePage: React.FC = () => {
                   <Button
                     onClick={handleFriendAction}
                     variant={isFriend(profileUser.id) ? 'outline' : 'default'}
-                    className="md:ml-auto"
+                    className="md:ml-auto cursor-pointer"
                   >
                     {isFriend(profileUser.id) ? (
                       <>
@@ -118,14 +119,6 @@ const ProfilePage: React.FC = () => {
                   <span className="font-bold">{userPosts.length}</span>
                   <span className="text-gray-600 ml-1">Bài viết</span>
                 </div>
-                {/* <div>
-                  <span className="font-bold">{profileUser.followers}</span>
-                  <span className="text-gray-600 ml-1">Người theo dõi</span>
-                </div>
-                <div>
-                  <span className="font-bold">{profileUser.following}</span>
-                  <span className="text-gray-600 ml-1">Đang theo dõi</span>
-                </div> */}
               </div>
             </div>
           </div>
@@ -151,35 +144,11 @@ const ProfilePage: React.FC = () => {
 
         {isOwnProfile && (
           <TabsContent value="friends" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-              {userFriends.map(friend => (
-                <Card key={friend.id}>
-                  <CardContent className="flex items-center gap-3 pt-6">
-                    <Link to={`/profile/${friend.id}`}>
-                      <Avatar className="w-16 h-16">
-                        <AvatarImage src={friend.avatar} alt={friend.fullName} />
-                        <AvatarFallback>{friend.fullName[0]}</AvatarFallback>
-                      </Avatar>
-                    </Link>
-                    <div className="flex-1">
-                      <Link to={`/profile/${friend.id}`} className="font-medium hover:underline">
-                        {friend.fullName}
-                      </Link>
-                      <p className="text-sm text-gray-500">@{friend.username}</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => removeFriend(friend.id)}>
-                      Hủy kết bạn
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {userFriends.length === 0 && (
-                <div className="col-span-2 text-center py-12 text-gray-500">
-                  <p>Chưa có bạn bè</p>
-                </div>
-              )}
-            </div>
+            <FriendList
+              friends={userFriends}
+              onRemoveFriend={removeFriend}
+              emptyMessage="Chưa có bạn bè"
+            />
           </TabsContent>
         )}
       </Tabs>

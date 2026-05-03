@@ -23,10 +23,10 @@ const Layout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen overflow-hidden bg-gray-50">
       <Header />
       
-      <div className="flex max-w-7xl mx-auto pt-16">
+      <div className="flex max-w-7xl mx-auto pt-16 h-[calc(100vh-4rem)]">
         {/* Desktop Sidebar */}
         <aside className="hidden lg:block w-60 fixed left-0 top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r bg-white">
           <div className="max-w-7xl mx-auto px-4">
@@ -35,7 +35,7 @@ const Layout: React.FC = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 xl:mr-80 pb-20 lg:pb-4">
+        <main className="flex-1 lg:ml-64 xl:mr-80 pb-20 lg:pb-4 overflow-y-auto h-full">
           <div className="max-w-2xl mx-auto px-4 py-6">
             <Outlet />
           </div>

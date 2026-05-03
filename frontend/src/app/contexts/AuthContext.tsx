@@ -103,14 +103,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await authService.login(email, password);
 
       if (response.success && response.data?.token) {
-        const savedUser = localStorage.getItem(authStorage.userKey);
-        const existingUser = savedUser ? (JSON.parse(savedUser) as User) : null;
-        const nextUser = mapAuthUserToUser(response.data, existingUser);
+        localStorage.setItem(authStorage.tokenKey, response.data.token);
+        setToken(response.data.token);
+
+        const currentUser = await authService.getCurrentUser();
+
+        console.log('CURRENT USER:', currentUser);
+
+        const nextUser: User = {
+          id: currentUser.id,
+          username: currentUser.userName || '',
+          email: currentUser.email,
+          fullName:
+            currentUser.fullName ||
+            currentUser.userName ||
+            currentUser.email.split('@')[0],
+          avatar: currentUser.avatar || DEFAULT_AVATAR,
+          bio: currentUser.bio || '',
+          phoneNumber: currentUser.phoneNumber || '',
+          dateOfBirth: currentUser.dateOfBirth || '',
+          createdAt: currentUser.createdAt || new Date().toISOString(),
+        };
 
         persistSession(nextUser, response.data.token);
+
         return { success: true, message: response.message };
       }
-
       return { success: false, message: response.message };
     } catch (error) {
       return { success: false, message: resolveAuthErrorMessage(error) };
@@ -154,12 +172,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const updateProfile = async (data: Partial<User>) => {
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
-    await authService.updateCurrentUser(data);
-    const updatedUser = { ...user, ...data };
+    const payload = {
+      userName: data.username ?? user.username,
+      fullName: data.fullName ?? user.fullName,
+      bio: data.bio ?? user.bio,
+      avatar: data.avatar ?? user.avatar,
+      phoneNumber: data.phoneNumber ?? user.phoneNumber ?? '',
+      dateOfBirth: data.dateOfBirth
+        ? new Date(data.dateOfBirth).toISOString()
+        : user.dateOfBirth || new Date().toISOString(),
+    };
+
+    await authService.updateCurrentUser(payload);
+
+    const updatedUser = {
+      ...user,
+      ...data,
+    };
+
     setUser(updatedUser);
     localStorage.setItem(authStorage.userKey, JSON.stringify(updatedUser));
   };

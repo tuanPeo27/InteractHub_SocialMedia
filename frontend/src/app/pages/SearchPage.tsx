@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import PostCard from '../components/PostCard';
 import UserCard from '../components/UserCard';
 import TrendingHashtags from '../components/TrendingHashtags';
+import FriendList from '../components/FriendList';
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -87,14 +88,11 @@ const SearchPage: React.FC = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="users" className="mt-6 space-y-4">
-            {userResults.length > 0 ? (
-              userResults.map((user) => (
-                <UserCard key={user.id} user={user} />
-              ))
-            ) : (
-              <p>Không tìm thấy người dùng</p>
-            )}
+          <TabsContent value="users" className="mt-6">
+            <FriendList
+              friends={userResults}
+              emptyMessage="Không tìm thấy người dùng"
+            />
           </TabsContent>
         </Tabs>
       ) : (
