@@ -184,16 +184,72 @@ builder.Services.AddSwaggerGen(c =>
 // BUILD APP
 // =======================
 var app = builder.Build();
-
 // =======================
 // AUTO MIGRATE DATABASE
 // =======================
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+    var services = scope.ServiceProvider;
 
+    // =======================
+    // DATABASE MIGRATION
+    // =======================
+    var db = services.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+
+    // =======================
+    // CREATE ROLES
+    // =======================
+    var roleManager =
+        services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    string[] roles = { "Admin", "User" };
+
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(
+                new IdentityRole(role)
+            );
+        }
+    }
+
+    // =======================
+    // CREATE DEFAULT ADMIN
+    // =======================
+    var userManager =
+        services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    var adminEmail = "admin@gmail.com";
+
+    var adminUser =
+        await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser == null)
+    {
+        var user = new ApplicationUser
+        {
+            UserName = "admin",
+            Email = adminEmail,
+            FullName = "System Admin",
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(
+            user,
+            "Admin123!"
+        );
+
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(
+                user,
+                "Admin"
+            );
+        }
+    }
+}
 // =======================
 // MIDDLEWARE
 // =======================
