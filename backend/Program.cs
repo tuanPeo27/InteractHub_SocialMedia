@@ -191,40 +191,28 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    // =======================
-    // DATABASE MIGRATION
-    // =======================
     var db = services.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 
-    // =======================
-    // CREATE ROLES
-    // =======================
-    var roleManager =
-        services.GetRequiredService<RoleManager<IdentityRole>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
     string[] roles = { "Admin", "User" };
 
     foreach (var role in roles)
     {
-        if (!await roleManager.RoleExistsAsync(role))
+        if (!roleManager.RoleExistsAsync(role).GetAwaiter().GetResult())
         {
-            await roleManager.CreateAsync(
-                new IdentityRole(role)
-            );
+            roleManager.CreateAsync(new IdentityRole(role))
+                .GetAwaiter().GetResult();
         }
     }
 
-    // =======================
-    // CREATE DEFAULT ADMIN
-    // =======================
-    var userManager =
-        services.GetRequiredService<UserManager<ApplicationUser>>();
-
     var adminEmail = "admin@gmail.com";
+    var adminPassword = "Admin123!";
 
-    var adminUser =
-        await userManager.FindByEmailAsync(adminEmail);
+    var adminUser = userManager.FindByEmailAsync(adminEmail)
+        .GetAwaiter().GetResult();
 
     if (adminUser == null)
     {
@@ -236,17 +224,13 @@ using (var scope = app.Services.CreateScope())
             EmailConfirmed = true
         };
 
-        var result = await userManager.CreateAsync(
-            user,
-            "Admin123!"
-        );
+        var result = userManager.CreateAsync(user, adminPassword)
+            .GetAwaiter().GetResult();
 
         if (result.Succeeded)
         {
-            await userManager.AddToRoleAsync(
-                user,
-                "Admin"
-            );
+            userManager.AddToRoleAsync(user, "Admin")
+                .GetAwaiter().GetResult();
         }
     }
 }
