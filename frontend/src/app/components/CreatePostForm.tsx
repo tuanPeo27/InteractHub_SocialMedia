@@ -14,6 +14,7 @@ const CreatePostForm: React.FC = () => {
   const { createPost } = usePosts();
   const { images, previews, uploading, handleFileChange, removeImage, clearImages } = useImageUpload(4);
   const [content, setContent] = useState('');
+  const [visibility, setVisibility] = useState<number>(0);
 
   const extractHashtags = (text: string): string[] => {
     const hashtagRegex = /#(\w+)/g;
@@ -23,16 +24,17 @@ const CreatePostForm: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!content.trim() && images.length === 0) {
       toast.error('Vui lòng nhập nội dung hoặc thêm hình ảnh!');
       return;
     }
 
     const hashtags = extractHashtags(content);
-    createPost(content, images, hashtags);
-    
+    createPost(content, images, hashtags, visibility);
+
     setContent('');
+    setVisibility(0);
     clearImages();
     toast.success('Đã đăng bài viết!');
   };
@@ -53,6 +55,22 @@ const CreatePostForm: React.FC = () => {
             onChange={(e) => setContent(e.target.value)}
             className="flex-1 min-h-[100px] resize-none"
           />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-medium text-gray-700" htmlFor="visibility">
+            Quyền riêng tư
+          </label>
+          <select
+            id="visibility"
+            value={visibility}
+            onChange={(e) => setVisibility(Number(e.target.value))}
+            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          >
+            <option value={0}>Công khai</option>
+            <option value={1}>Bạn bè</option>
+            <option value={2}>Chỉ mình tôi</option>
+          </select>
         </div>
 
         {/* Image Previews */}
@@ -95,7 +113,7 @@ const CreatePostForm: React.FC = () => {
               onChange={handleFileChange}
               className="hidden"
             />
-            
+
             <div className="text-sm text-gray-500 flex items-center gap-1">
               <Hash className="w-4 h-4" />
               <span>Sử dụng #hashtag</span>

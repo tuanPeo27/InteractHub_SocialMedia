@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePosts } from '../contexts/PostContext';
 import { useFriends } from '../contexts/FriendContext';
 import { useUsers } from '../contexts/UsersContext';
+import { getVietnamTime } from '../utils/dateHelper';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';

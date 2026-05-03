@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Trash2, Flag } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Trash2, Flag, Lock, Globe2, Users } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Post } from '../types';
@@ -13,6 +13,7 @@ import CommentSection from './CommentSection';
 import { toast } from 'sonner';
 import { cn } from './ui/utils';
 import { likesService } from '../services/likesService';
+import { getVietnamTime } from '../utils/dateHelper';
 
 interface PostCardProps {
   post: Post;
@@ -106,8 +107,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
               </Avatar>
               <div>
                 <p className="font-medium">{post.user.fullName}</p>
-                <p className="text-sm text-gray-500">
-                  @{post.user.username} · {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: vi })}
+                <p className="text-sm text-gray-500 flex flex-wrap items-center gap-2">
+                  @{post.user.username} · {formatDistanceToNow(getVietnamTime(post.createdAt), { addSuffix: true, locale: vi })}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                    {post.visibility === 1 ? <Users className="w-3.5 h-3.5" /> : post.visibility === 2 ? <Lock className="w-3.5 h-3.5" /> : <Globe2 className="w-3.5 h-3.5" />}
+                    {post.visibility === 1 ? 'Bạn bè' : post.visibility === 2 ? 'Chỉ mình tôi' : 'Công khai'}
+
+                  </span>
                 </p>
               </div>
             </Link>
@@ -203,15 +209,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
           <div className="flex items-center gap-4 text-sm text-gray-600 w-full">
             <button
               onClick={handleOpenLikes}
-              className="font-medium hover:underline transition-all"
+              className="font-medium hover:underline transition-all inline-flex items-center gap-1"
             >
+              <Heart className="w-4 h-4" />
               {post.likes.length} lượt thích
             </button>
             <button
               onClick={() => setShowComments(!showComments)}
-              className="font-medium hover:underline transition-all"
+              className="font-medium hover:underline transition-all inline-flex items-center gap-1"
             >
-              {post.comments.length} lượt bình luận
+              <MessageCircle className="w-4 h-4" />
+              {post.comments.length} bình luận
             </button>
           </div>
 
@@ -256,7 +264,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
 
             {likeUsers.length > 0 ? (
               likeUsers.map((u) => (
-                <div key={u.userId} className="flex items-center gap-3 py-2">
+                <Link
+                  key={u.userId}
+                  to={`/profile/${u.userId}`}
+                  className="flex items-center gap-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+                  onClick={() => setShowLikes(false)}
+                >
                   <Avatar className="w-8 h-8">
                     <AvatarImage src={u.avatar || undefined} alt={u.userName} />
                     <AvatarFallback>
@@ -269,7 +282,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
                       Đã thích bài viết
                     </p>
                   </div>
-                </div>
+                </Link>
               ))
             ) : (
               <p className="text-center text-gray-500 py-4">Không có lượt thích</p>

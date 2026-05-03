@@ -21,6 +21,7 @@ export interface Post {
   comments: Comment[];
   shares: number;
   hashtags: string[];
+  visibility: number;
   createdAt: string;
   updatedAt: string;
 }
