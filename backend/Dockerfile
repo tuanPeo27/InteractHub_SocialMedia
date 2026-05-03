@@ -8,7 +8,7 @@ RUN dotnet restore
 RUN dotnet publish -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/nightly/aspnet:10.0-preview
-
+RUN apt-get update && apt-get install -y libgssapi-krb5-2
 WORKDIR /app
 
 COPY --from=build /app/publish .
