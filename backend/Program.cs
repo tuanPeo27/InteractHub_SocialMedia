@@ -224,7 +224,7 @@ app.UseSwaggerUI(c =>
 // =======================
 // CORS
 // =======================
-
+app.UseRouting();   
 app.UseCors("AllowReact");
 
 

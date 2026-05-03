@@ -9,44 +9,44 @@ export const authService = {
   storeAuthSession,
 
   async login(email: string, password: string) {
-    const response = await apiClient.post<ApiAuthResult>('/Auth/login', { email, password });
+    const response = await apiClient.post<ApiAuthResult>('/auth/login', { email, password });
     return response.data;
   },
 
   async register(email: string, password: string, userName?: string, fullName?: string) {
-    const response = await apiClient.post<ApiAuthResult>('/Auth/register', {
+    const response = await apiClient.post<ApiAuthResult>('/auth/register', {
       email,
       password,
       userName,
       fullName,
     });
     return response.data;
-  },    
+  },
 
   async logout() {
-    await apiClient.post('/Auth/logout');
+    await apiClient.post('/auth/logout');
     clearAuthSession();
   },
 
   async forgotPassword(email: string) {
-    await apiClient.post('/Auth/forgot-password', { email });
+    await apiClient.post('/auth/forgot-password', { email });
   },
 
   async resetPassword(email: string, token: string, newPassword: string) {
-    await apiClient.post('/Auth/reset-password', { email, token, newPassword });
+    await apiClient.post('/auth/reset-password', { email, token, newPassword });
   },
 
   async changePassword(currentPassword: string, newPassword: string) {
-    await apiClient.post('/Auth/change-password', { currentPassword, newPassword });
+    await apiClient.post('/auth/change-password', { currentPassword, newPassword });
   },
 
   async getCurrentUser() {
-    const response = await apiClient.get<ApiUser>('/User/me');
+    const response = await apiClient.get<ApiUser>('/user/me');
     return response.data;
   },
 
   async updateCurrentUser(data: Partial<User>) {
-    const response = await apiClient.put('/User/me', {
+    const response = await apiClient.put('/user/me', {
       userName: data.username,
       fullName: data.fullName,
       bio: data.bio,
