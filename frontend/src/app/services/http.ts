@@ -1,11 +1,20 @@
 import axios from 'axios';
 
-const DEFAULT_API_BASE_URL = 'http://26.248.122.134:5052/api';
+const DEFAULT_API_BASE_URL =
+  'https://interacthub-socialmedia-1.onrender.com/api';
+
 const AUTH_TOKEN_KEY = 'authToken';
 const CURRENT_USER_KEY = 'currentUser';
 
-const apiEnv = (import.meta as ImportMeta & { env?: { VITE_API_BASE_URL?: string } }).env;
-const apiBaseUrl = (apiEnv?.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/$/, '');
+const apiEnv = (
+  import.meta as ImportMeta & {
+    env?: { VITE_API_BASE_URL?: string };
+  }
+).env;
+
+const apiBaseUrl = (
+  apiEnv?.VITE_API_BASE_URL || DEFAULT_API_BASE_URL
+).replace(/\/$/, '');
 
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
@@ -27,9 +36,13 @@ export const authStorage = {
   userKey: CURRENT_USER_KEY,
 };
 
-export const getStoredAuthToken = () => localStorage.getItem(AUTH_TOKEN_KEY);
+export const getStoredAuthToken = () =>
+  localStorage.getItem(AUTH_TOKEN_KEY);
 
-export const storeAuthSession = (token: string, userJson: string) => {
+export const storeAuthSession = (
+  token: string,
+  userJson: string
+) => {
   localStorage.setItem(AUTH_TOKEN_KEY, token);
   localStorage.setItem(CURRENT_USER_KEY, userJson);
 };
