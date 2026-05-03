@@ -15,29 +15,23 @@ using backend.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // =======================
 // DATABASE
 // =======================
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
 // =======================
 // IDENTITY
 // =======================
-
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-
 // =======================
-// CORS
+// ✅ CORS (FIX CHUẨN)
 // =======================
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
@@ -53,11 +47,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-
 // =======================
 // JWT AUTHENTICATION
 // =======================
-
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -114,13 +106,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
 // =======================
 // SERVICES
 // =======================
-
 builder.Services.AddScoped<JwtService>();
-
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.Configure<EmailOptions>(
@@ -144,20 +133,15 @@ builder.Services.AddScoped<IPrivacyService, PrivacyService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IHashtagService, HashtagService>();
 
-
 // =======================
 // SIGNALR
 // =======================
-
 builder.Services.AddSignalR();
-
 builder.Services.AddSingleton<IUserIdProvider, SubClaimUserIdProvider>();
-
 
 // =======================
 // CONTROLLERS + SWAGGER
 // =======================
-
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -196,73 +180,48 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-
 // =======================
 // BUILD APP
 // =======================
-
 var app = builder.Build();
-
 
 // =======================
 // MIDDLEWARE
 // =======================
 
-app.UseDefaultFiles();
+// ⚠️ QUAN TRỌNG: CORS phải đứng TRƯỚC auth
+app.UseCors("AllowReact");
 
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.UseSwagger();
+app.UseRouting();
 
+app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "InteractHub API V1");
     c.RoutePrefix = "swagger";
 });
 
-
-// =======================
-// CORS
-// =======================
-app.UseRouting();   
-app.UseCors("AllowReact");
-
-
 // =======================
 // AUTH
 // =======================
-
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 
 // =======================
 // ROUTES
 // =======================
-
 app.MapControllers();
-
 app.MapHub<NotificationHub>("/hubs/notifications");
-
 
 // =======================
 // SPA FALLBACK
 // =======================
-
 app.MapFallbackToFile("index.html");
 
-
 // =======================
-// DEBUG CONNECTION STRING
+// RUN
 // =======================
-
-Console.WriteLine(
-    builder.Configuration.GetConnectionString("DefaultConnection"));
-
-
-// =======================
-// RUN APP
-// =======================
-
 app.Run();
