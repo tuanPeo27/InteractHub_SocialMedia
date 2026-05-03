@@ -49,6 +49,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const currentUser = await authService.getCurrentUser();
         const existingUser = localStorage.getItem(authStorage.userKey);
         const savedUser = existingUser ? (JSON.parse(existingUser) as User) : null;
+        const inferredIsAdmin = savedUser?.isAdmin || currentUser.userName?.toLowerCase() === 'admin';
 
         const nextUser = savedUser
           ? {
@@ -58,8 +59,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                   email: currentUser.email,
                   userName: currentUser.userName,
                   userId: currentUser.id,
-                  roles: currentUser.userName?.toLowerCase() === 'admin' ? ['Admin'] : [],
-                  primaryRole: currentUser.userName?.toLowerCase() === 'admin' ? 'Admin' : undefined,
+                  roles: inferredIsAdmin ? ['Admin'] : [],
+                  primaryRole: inferredIsAdmin ? 'Admin' : undefined,
                 },
                 savedUser,
               ),
@@ -71,6 +72,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               fullName: currentUser.fullName || currentUser.userName || currentUser.email.split('@')[0],
               avatar: currentUser.avatar || DEFAULT_AVATAR,
               bio: currentUser.bio || '',
+              isAdmin: inferredIsAdmin,
               createdAt: new Date().toISOString(),
             };
 
@@ -107,23 +109,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setToken(response.data.token);
 
         const currentUser = await authService.getCurrentUser();
+        const authIsAdmin = response.data.roles?.includes('Admin') || response.data.primaryRole === 'Admin';
 
         console.log('CURRENT USER:', currentUser);
 
-        const nextUser: User = {
-          id: currentUser.id,
-          username: currentUser.userName || '',
-          email: currentUser.email,
-          fullName:
-            currentUser.fullName ||
-            currentUser.userName ||
-            currentUser.email.split('@')[0],
-          avatar: currentUser.avatar || DEFAULT_AVATAR,
-          bio: currentUser.bio || '',
-          phoneNumber: currentUser.phoneNumber || '',
-          dateOfBirth: currentUser.dateOfBirth || '',
-          createdAt: currentUser.createdAt || new Date().toISOString(),
-        };
+        const nextUser = mapAuthUserToUser(
+          {
+            email: currentUser.email,
+            userName: currentUser.userName,
+            userId: currentUser.id,
+            roles: authIsAdmin ? ['Admin'] : response.data.roles,
+            primaryRole: authIsAdmin ? 'Admin' : response.data.primaryRole,
+          },
+          {
+            id: currentUser.id,
+            username: currentUser.userName || '',
+            email: currentUser.email,
+            fullName:
+              currentUser.fullName ||
+              currentUser.userName ||
+              currentUser.email.split('@')[0],
+            avatar: currentUser.avatar || DEFAULT_AVATAR,
+            bio: currentUser.bio || '',
+            phoneNumber: currentUser.phoneNumber || '',
+            dateOfBirth: currentUser.dateOfBirth || '',
+            createdAt: currentUser.createdAt || new Date().toISOString(),
+            isAdmin: authIsAdmin,
+          },
+        );
 
         persistSession(nextUser, response.data.token);
 

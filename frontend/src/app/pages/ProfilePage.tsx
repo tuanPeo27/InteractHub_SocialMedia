@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { UserPlus, UserMinus, Settings, MapPin, Calendar, Phone } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
 import { useAuth } from '../contexts/AuthContext';
 import { usePosts } from '../contexts/PostContext';
 import { useFriends } from '../contexts/FriendContext';
@@ -120,10 +118,6 @@ const ProfilePage: React.FC = () => {
                     {new Date(profileUser.dateOfBirth).toLocaleDateString('vi-VN')}
                   </div>
                 )}
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  Tham gia {formatDistanceToNow(new Date(profileUser.createdAt), { addSuffix: true, locale: vi })}
-                </div>
               </div>
 
               <div className="flex gap-6 mt-4">
