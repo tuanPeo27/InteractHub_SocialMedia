@@ -1,4 +1,5 @@
 import { RouterProvider } from 'react-router';
+import { Toaster } from './components/ui/sonner';
 import { UsersProvider } from './contexts/UsersContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { PostProvider } from './contexts/PostContext';
@@ -16,6 +17,7 @@ export default function App() {
             <StoryProvider>
               <FriendProvider>
                 <RouterProvider router={router} />
+                <Toaster />
               </FriendProvider>
             </StoryProvider>
           </NotificationProvider>

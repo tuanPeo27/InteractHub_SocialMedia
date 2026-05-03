@@ -6,7 +6,6 @@ import Sidebar from './Sidebar';
 import MobileNav from './MobileNav';
 import TrendingHashtags from './TrendingHashtags';
 import FriendSuggestions from './FriendSuggestions';
-import { Toaster } from './ui/sonner';
 
 const Layout: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -52,8 +51,6 @@ const Layout: React.FC = () => {
 
       {/* Mobile Navigation */}
       <MobileNav />
-
-      <Toaster />
     </div>
   );
 };
