@@ -119,6 +119,7 @@ export const toFrontendPost = (
     comments,
     shares: 0,
     hashtags: extractHashtags(apiPost.content),
+    visibility: apiPost.visibility ?? 0,
     createdAt: apiPost.createdAt,
     updatedAt: apiPost.updatedAt,
   };
@@ -145,7 +146,7 @@ export const toFrontendStory = (apiStory: ApiStory, userLookup: Map<string, User
 
 export const toFrontendNotification = (notification: ApiNotification, userLookup: Map<string, User>): Notification => {
   const fromUser = notification.fromUserId && userLookup.get(notification.fromUserId);
-  
+
   return {
     id: String(notification.id),
     userId: notification.fromUserId || '',

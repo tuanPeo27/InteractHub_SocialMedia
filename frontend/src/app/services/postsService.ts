@@ -7,11 +7,11 @@ export const postsService = {
     return response.data;
   },
 
-  async create(content: string, imageUrl: string | null) {
+  async create(content: string, imageUrl: string | null, visibility: number) {
     const response = await apiClient.post<ApiPost>('/Posts', {
       content,
       imageUrl,
-      visibility: 0,
+      visibility,
     });
     return response.data;
   },

@@ -11,7 +11,7 @@ import type { ApiComment, ApiLikeInfo } from '../services/types';
 interface PostContextType {
   posts: Post[];
   loading: boolean;
-  createPost: (content: string, images: string[], hashtags: string[]) => Promise<void>;
+  createPost: (content: string, images: string[], hashtags: string[], visibility: number) => Promise<void>;
   likePost: (postId: string) => Promise<void>;
   unlikePost: (postId: string) => Promise<void>;
   addComment: (postId: string, content: string) => Promise<void>;
@@ -73,12 +73,12 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [usersLoading, user?.id]);
 
   // console.log("posts:", posts);
-  const createPost = async (content: string, images: string[], hashtags: string[]) => {
+  const createPost = async (content: string, images: string[], hashtags: string[], visibility: number) => {
     if (!user) return;
 
     const imageUrl = images[0] || null;
     const serverContent = content.trim();
-    const createdPost = await postsService.create(serverContent, imageUrl);
+    const createdPost = await postsService.create(serverContent, imageUrl, visibility);
     const userLookup = new Map(users.map((item) => [item.id, item] as const));
     const nextPost = toFrontendPost(createdPost, userLookup, new Map<number, ApiComment[]>(), new Map<number, ApiLikeInfo>(), user.id);
 

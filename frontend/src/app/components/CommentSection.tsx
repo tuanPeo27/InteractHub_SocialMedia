@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { getVietnamTime } from '../utils/dateHelper';
 
 interface CommentSectionProps {
   post: Post;
@@ -105,7 +106,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post }) => {
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-1 ml-3">
-                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: vi })}
+                {formatDistanceToNow(getVietnamTime(comment.createdAt), { addSuffix: true, locale: vi })}
               </p>
             </div>
           </div>

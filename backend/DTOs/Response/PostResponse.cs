@@ -6,6 +6,7 @@ public class PostResponse
     public string Content { get; set; }
     public string? ImageUrl { get; set; }
     public string UserId { get; set; }
+    public int Visibility { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

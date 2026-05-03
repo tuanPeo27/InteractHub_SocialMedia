@@ -7,6 +7,7 @@ import { useStories } from '../contexts/StoryContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
+import { getVietnamTime } from '../utils/dateHelper';
 
 interface StoryViewerProps {
   storyGroups: Story[][];
@@ -73,8 +74,8 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ storyGroups, initialGroupInde
             key={index}
             value={
               index < currentStoryIndex ? 100 :
-              index === currentStoryIndex ? progress :
-              0
+                index === currentStoryIndex ? progress :
+                  0
             }
             className="h-1 flex-1 bg-white/30"
           />
@@ -91,7 +92,7 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ storyGroups, initialGroupInde
           <div className="text-white">
             <p className="font-medium">{currentStory.user.fullName}</p>
             <p className="text-xs opacity-80">
-              {formatDistanceToNow(new Date(currentStory.createdAt), { addSuffix: true, locale: vi })}
+              {formatDistanceToNow(getVietnamTime(currentStory.createdAt), { addSuffix: true, locale: vi })}
             </p>
           </div>
         </div>

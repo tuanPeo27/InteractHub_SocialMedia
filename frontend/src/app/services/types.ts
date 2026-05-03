@@ -38,6 +38,7 @@ export interface ApiPost {
   content: string;
   imageUrl?: string | null;
   userId: string;
+  visibility?: number;
   createdAt: string;
   updatedAt: string;
 }

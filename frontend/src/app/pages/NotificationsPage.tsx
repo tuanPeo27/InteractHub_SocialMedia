@@ -7,6 +7,7 @@ import { useNotifications } from '../contexts/NotificationContext';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { getVietnamTime } from '../utils/dateHelper';
 import { cn } from '../components/ui/utils';
 import { toast } from 'sonner';
 
@@ -88,7 +89,7 @@ const NotificationsPage: React.FC = () => {
                             <span className="text-gray-600">{notification.message}</span>
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: vi })}
+                            {formatDistanceToNow(getVietnamTime(notification.createdAt), { addSuffix: true, locale: vi })}
                           </p>
                         </div>
                         {getNotificationIcon(notification.type)}
