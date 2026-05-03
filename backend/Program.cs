@@ -43,9 +43,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReact", policy =>
     {
         policy
-            .AllowAnyOrigin()
+            .WithOrigins(
+                "http://localhost:5173",
+                "https://interacthub-socialmedia-2.onrender.com"
+            )
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -146,6 +150,7 @@ builder.Services.AddScoped<IHashtagService, HashtagService>();
 // =======================
 
 builder.Services.AddSignalR();
+
 builder.Services.AddSingleton<IUserIdProvider, SubClaimUserIdProvider>();
 
 
@@ -203,6 +208,8 @@ var app = builder.Build();
 // MIDDLEWARE
 // =======================
 
+app.UseDefaultFiles();
+
 app.UseStaticFiles();
 
 app.UseSwagger();
@@ -212,13 +219,6 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "InteractHub API V1");
     c.RoutePrefix = "swagger";
 });
-
-
-// =======================
-// ROOT ENDPOINT
-// =======================
-
-app.MapGet("/", () => "InteractHub API Running");
 
 
 // =======================
@@ -233,6 +233,7 @@ app.UseCors("AllowReact");
 // =======================
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 
@@ -243,6 +244,13 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<NotificationHub>("/hubs/notifications");
+
+
+// =======================
+// SPA FALLBACK
+// =======================
+
+app.MapFallbackToFile("index.html");
 
 
 // =======================
