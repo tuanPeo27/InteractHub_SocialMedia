@@ -27,12 +27,13 @@ import { DEFAULT_AVATAR } from "../services/mappers";
 
 const AdminPage: React.FC = () => {
   const { user } = useAuth();
-  const { posts, deletePost } = usePosts();
+  const { posts } = usePosts();
   const navigate = useNavigate();
   const [reports, setReports] = useState<ApiReport[]>([]);
   const [users, setUsers] = useState<ApiAdminUser[]>([]);
   const [loadingReports, setLoadingReports] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [removedPostIds, setRemovedPostIds] = useState<Set<string>>(() => new Set());
   const [reviewedReports, setReviewedReports] = useState<Set<number>>(
     () => new Set(),
   );
@@ -81,20 +82,24 @@ const AdminPage: React.FC = () => {
   }, [user?.isAdmin]);
 
   const handleRemovePost = async (postId: number) => {
-  try {
-    await deletePost(String(postId));
+    try {
+      await adminService.deletePost(String(postId));
 
-    setReports((current) =>
-      current.filter(
-        (report) => String(report.postId) !== String(postId)
-      )
-    );
+      setRemovedPostIds((current) => {
+        const next = new Set(current);
+        next.add(String(postId));
+        return next;
+      });
 
-    toast.success("Đã xóa bài viết!");
-  } catch {
-    toast.error("Xóa bài viết thất bại!");
-  }
-};
+      setReports((current) =>
+        current.filter((report) => String(report.postId) !== String(postId)),
+      );
+
+      toast.success("Đã xóa bài viết!");
+    } catch {
+      toast.error("Xóa bài viết thất bại!");
+    }
+  };
 
   const handleMarkReviewed = (reportId: number) => {
     setReviewedReports((current) => {
@@ -182,9 +187,16 @@ const AdminPage: React.FC = () => {
 
   const reportPostLookup = useMemo(() => {
     const lookup = new Map<number, Post>();
-    posts.forEach((post) => lookup.set(Number(post.id), post));
+    posts
+      .filter((post) => !removedPostIds.has(post.id))
+      .forEach((post) => lookup.set(Number(post.id), post));
     return lookup;
-  }, [posts]);
+  }, [posts, removedPostIds]);
+
+  const visiblePosts = useMemo(
+    () => posts.filter((post) => !removedPostIds.has(post.id)),
+    [posts, removedPostIds],
+  );
 
   return (
     <div className="space-y-6">
@@ -199,7 +211,7 @@ const AdminPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-gray-600">Tổng bài viết</p>
-              <p className="text-2xl font-bold">{posts.length}</p>
+              <p className="text-2xl font-bold">{visiblePosts.length}</p>
             </div>
             <div className="p-4 bg-yellow-50 rounded-lg">
               <p className="text-sm text-gray-600">Báo cáo chờ xử lý</p>
@@ -403,7 +415,7 @@ const AdminPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {posts.map((post) => (
+            {visiblePosts.map((post) => (
               <div key={post.id} className="border rounded-lg p-4">
                 <PostCard post={post} />
                 <div className="mt-3 flex justify-end">
