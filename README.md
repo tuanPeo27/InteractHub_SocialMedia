@@ -241,7 +241,8 @@ Deployment includes:
 Live Demo:
 
 ```
-https://interacthub.azurewebsites.net
+https://interacthub-socialmedia-2.onrender.com
+
 ```
 
 ---
