@@ -16,10 +16,10 @@ using backend.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 // =======================
-// DATABASE
+// DATABASE (POSTGRESQL)
 // =======================
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // =======================
@@ -30,7 +30,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 // =======================
-// ✅ CORS (FIX CHUẨN)
+// CORS
 // =======================
 builder.Services.AddCors(options =>
 {
@@ -186,10 +186,17 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // =======================
+// AUTO MIGRATE DATABASE
+// =======================
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
+// =======================
 // MIDDLEWARE
 // =======================
-
-// ⚠️ QUAN TRỌNG: CORS phải đứng TRƯỚC auth
 app.UseCors("AllowReact");
 
 app.UseDefaultFiles();
@@ -198,6 +205,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseSwagger();
+
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "InteractHub API V1");
@@ -220,6 +228,14 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 // SPA FALLBACK
 // =======================
 app.MapFallbackToFile("index.html");
+
+// =======================
+// DEBUG DB CONNECTION
+// =======================
+Console.WriteLine(
+    "DB: " +
+    builder.Configuration.GetConnectionString("DefaultConnection")
+);
 
 // =======================
 // RUN
