@@ -22,11 +22,13 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
   const { user } = useAuth();
-  const { likePost, unlikePost, deletePost } = usePosts();
+  const { likePost, unlikePost, deletePost, updatePost } = usePosts();
   const [showComments, setShowComments] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
   const [likeUsers, setLikeUsers] = useState<any[]>([]);
   const [showMenu, setShowMenu] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
   const menuRef = useRef<HTMLDivElement>(null);
   const isLiked = user ? post.likes.includes(user.id) : false;
   const isOwnPost = user?.id === post.userId;
@@ -51,6 +53,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
     }
   };
 
+  const handleEdit = () => {
+    setEditContent(post.content);
+    setShowEdit(true);
+  };
 
   const handleDelete = async () => {
     try {
@@ -129,12 +135,24 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
                 <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-0 z-10 min-w-max">
                   {isOwnPost ? (
                     <>
+                      {/* Nút chỉnh sửa */}
+                      <button
+                        onClick={() => {
+                          handleEdit();
+                          setShowMenu(false);
+                        }}
+                        className="block w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors flex items-center"
+                      >
+                        ✏️ Chỉnh sửa bài viết
+                      </button>
+
+                      {/* Nút xóa */}
                       <button
                         onClick={() => {
                           void handleDelete();
                           setShowMenu(false);
                         }}
-                        className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-t-lg transition-colors flex items-center"
+                        className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition-colors flex items-center"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Xóa bài viết
@@ -251,7 +269,44 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
           {showComments && <CommentSection post={post} />}
         </CardFooter>
       </Card>
+      {showEdit && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white w-[500px] rounded-lg p-4">
+            <h2 className="font-bold mb-3">Chỉnh sửa bài viết</h2>
 
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full border rounded p-2 mb-3"
+              rows={4}
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowEdit(false)}
+                className="px-3 py-1 rounded hover:bg-gray-100"
+              >
+                Hủy
+              </button>
+
+              <button
+                onClick={async () => {
+                  try {
+                    await updatePost(post.id, editContent, post.images);
+                    toast.success('Cập nhật thành công!');
+                    setShowEdit(false);
+                  } catch {
+                    toast.error('Cập nhật thất bại!');
+                  }
+                }}
+                className="bg-blue-500 text-white px-4 py-1 rounded"
+              >
+                Lưu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showLikes && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white w-80 rounded-lg p-4 max-h-[400px] overflow-y-auto">

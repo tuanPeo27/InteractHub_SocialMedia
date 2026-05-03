@@ -18,6 +18,7 @@ interface PostContextType {
   deleteComment: (postId: string, commentId: string) => Promise<void>;
   sharePost: (postId: string) => void;
   deletePost: (postId: string) => Promise<void>;
+  updatePost: (postId: string, content: string, images: string[]) => Promise<void>;
   getPostById: (postId: string) => Post | undefined;
   getPostsByHashtag: (hashtag: string) => Post[];
   searchPosts: (query: string) => Post[];
@@ -165,6 +166,34 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const updatePost = async (postId: string, content: string, images: string[]) => {
+    const previousPosts = posts;
+
+    try {
+      const updated = await postsService.update(
+        postId,
+        content,
+        images[0] || null
+      );
+
+      const userLookup = new Map(users.map((u) => [u.id, u]));
+      const updatedPost = toFrontendPost(
+        updated,
+        userLookup,
+        new Map(),
+        new Map(),
+        user?.id
+      );
+
+      setPosts((current) =>
+        current.map((p) => (p.id === postId ? updatedPost : p))
+      );
+    } catch (error) {
+      setPosts(previousPosts);
+      throw error;
+    }
+  };
+
   const getPostById = (postId: string) => posts.find((post) => post.id === postId);
 
   const getPostsByHashtag = (hashtag: string) => posts.filter((post) =>
@@ -194,6 +223,7 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         deleteComment,
         sharePost,
         deletePost,
+        updatePost,
         getPostById,
         getPostsByHashtag,
         searchPosts,
