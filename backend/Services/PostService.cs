@@ -116,6 +116,28 @@ public class PostsService : IPostsService
         if (post.UserId != userId)
             throw new UnauthorizedAccessException();
 
+        var comments = await _context.Comments
+            .Where(c => c.PostId == id)
+            .ToListAsync();
+        var likes = await _context.Likes
+            .Where(l => l.PostId == id)
+            .ToListAsync();
+        var reports = await _context.PostReports
+            .Where(r => r.PostId == id)
+            .ToListAsync();
+        var postHashtags = await _context.PostHashtags
+            .Where(ph => ph.PostId == id)
+            .ToListAsync();
+
+        if (comments.Count > 0)
+            _context.Comments.RemoveRange(comments);
+        if (likes.Count > 0)
+            _context.Likes.RemoveRange(likes);
+        if (reports.Count > 0)
+            _context.PostReports.RemoveRange(reports);
+        if (postHashtags.Count > 0)
+            _context.PostHashtags.RemoveRange(postHashtags);
+
         _context.Posts.Remove(post);
         await _context.SaveChangesAsync();
 

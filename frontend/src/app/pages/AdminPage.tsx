@@ -323,7 +323,6 @@ const AdminPage: React.FC = () => {
             <div className="space-y-4">
               {reports.map((report) => {
                 const post = reportPostLookup.get(report.postId);
-                if (!post) return null;
                 const isReviewed = reviewedReports.has(report.id);
 
                 return (
@@ -369,7 +368,20 @@ const AdminPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="border-t pt-3">
-                      <PostCard post={post} />
+                      {post ? (
+                        <PostCard post={post} />
+                      ) : (
+                        <div className="rounded-lg border border-dashed bg-gray-50 p-4 text-sm text-gray-600">
+                          <p className="font-medium text-gray-900">
+                            Bài viết #{report.postId}
+                          </p>
+                          <p className="mt-1">
+                            Bài viết này không còn trong danh sách bài viết hiện tại.
+                            Có thể bài đã bị ẩn, đã bị xóa, hoặc không nằm trong feed
+                            đang tải của quản trị viên.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

@@ -98,5 +98,58 @@ public class PostServiceTests
 
         Assert.False(result);
     }
+
+    [Fact]
+    public async Task Delete_WithDependentRows_RemovesPostAndChildren()
+    {
+        _context.Posts.Add(new Post
+        {
+            Id = 1,
+            UserId = "u1",
+            Content = "hello",
+            CreatedAt = DateTime.UtcNow
+        });
+        _context.Comments.Add(new Comment
+        {
+            Id = 10,
+            PostId = 1,
+            UserId = "u2",
+            Content = "comment"
+        });
+        _context.Likes.Add(new Like
+        {
+            Id = 20,
+            PostId = 1,
+            UserId = "u3"
+        });
+        _context.PostReports.Add(new PostReport
+        {
+            Id = 30,
+            PostId = 1,
+            UserId = "u4",
+            Reason = "spam"
+        });
+        _context.Hashtags.Add(new Hashtag
+        {
+            Id = 40,
+            Name = "tag"
+        });
+        _context.PostHashtags.Add(new PostHashtag
+        {
+            PostId = 1,
+            HashtagId = 40
+        });
+
+        await _context.SaveChangesAsync();
+
+        var result = await _service.DeleteAsync(1, "u1");
+
+        Assert.True(result);
+        Assert.Empty(_context.Posts);
+        Assert.Empty(_context.Comments);
+        Assert.Empty(_context.Likes);
+        Assert.Empty(_context.PostReports);
+        Assert.Empty(_context.PostHashtags);
+    }
     
 }
