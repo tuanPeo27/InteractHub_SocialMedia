@@ -37,8 +37,10 @@ export const mapApiUserToUser = (apiUser: ApiUser, fallbackRole?: string): User 
   fullName: apiUser.fullName || apiUser.userName || displayNameFromEmail(apiUser.email),
   avatar: apiUser.avatar || DEFAULT_AVATAR,
   bio: apiUser.bio || '',
+  phoneNumber: apiUser.phoneNumber || undefined,
+  dateOfBirth: apiUser.dateOfBirth || undefined,
   isAdmin: fallbackRole === 'Admin' || apiUser.userName?.toLowerCase() === 'admin',
-  createdAt: apiUser.dateOfBirth || new Date().toISOString(),
+  createdAt: apiUser.createdAt || new Date().toISOString(),
 });
 
 export const mapAuthUserToUser = (

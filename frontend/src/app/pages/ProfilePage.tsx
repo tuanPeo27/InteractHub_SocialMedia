@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router';
-import { UserPlus, UserMinus, Settings, MapPin, Calendar } from 'lucide-react';
+import { UserPlus, UserMinus, Settings, MapPin, Calendar, Phone } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useAuth } from '../contexts/AuthContext';
@@ -108,6 +108,18 @@ const ProfilePage: React.FC = () => {
               <p className="text-gray-700 mb-4">{profileUser.bio || 'Chưa có giới thiệu'}</p>
 
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                {profileUser.phoneNumber && (
+                  <div className="flex items-center gap-1">
+                    <Phone className="w-4 h-4" />
+                    {profileUser.phoneNumber}
+                  </div>
+                )}
+                {profileUser.dateOfBirth && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    {new Date(profileUser.dateOfBirth).toLocaleDateString('vi-VN')}
+                  </div>
+                )}
                 <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
                   Tham gia {formatDistanceToNow(new Date(profileUser.createdAt), { addSuffix: true, locale: vi })}
