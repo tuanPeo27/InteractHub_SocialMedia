@@ -16,6 +16,15 @@ export const postsService = {
     return response.data;
   },
 
+  async update(postId: string, content: string, imageUrl: string | null) {
+    const response = await apiClient.put<ApiPost>(`/Posts/${postId}`, {
+      content,
+      imageUrl,
+    });
+    return response.data;
+  },
+
+
   async delete(id: string) {
     const response = await apiClient.delete(`/Posts/${id}`);
     return response.data;
