@@ -15,6 +15,7 @@ import { cn } from './ui/utils';
 import { reportService } from '../services/reportService';
 import { likesService } from '../services/likesService';
 import { getVietnamTime } from '../utils/dateHelper';
+import { useImageUpload } from '../hooks/useImageUpload';
 
 interface PostCardProps {
   post: Post;
@@ -30,6 +31,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
+  const [editVisibility, setEditVisibility] = useState(post.visibility);
+  const { images: editImages, previews: editPreviews, uploading: editUploading, handleFileChange: handleEditFileChange, removeImage: removeEditImage, clearImages: clearEditImages } = useImageUpload(4);
   const menuRef = useRef<HTMLDivElement>(null);
   const isLiked = user ? post.likes.includes(user.id) : false;
   const isOwnPost = user?.id === post.userId;
@@ -56,6 +59,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
 
   const handleEdit = () => {
     setEditContent(post.content);
+    setEditVisibility(post.visibility);
+    clearEditImages();
+    // Set existing images as previews
+    editPreviews.splice(0, editPreviews.length, ...post.images);
+    editImages.splice(0, editImages.length, ...post.images);
     setShowEdit(true);
   };
 
@@ -260,7 +268,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
       </Card>
       {showEdit && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white w-[500px] rounded-lg p-4">
+          <div className="bg-white w-[600px] rounded-lg p-4 max-h-[80vh] overflow-y-auto">
             <h2 className="font-bold mb-3">Chỉnh sửa bài viết</h2>
 
             <textarea
@@ -268,7 +276,71 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
               onChange={(e) => setEditContent(e.target.value)}
               className="w-full border rounded p-2 mb-3"
               rows={4}
+              placeholder="Nội dung bài viết..."
             />
+
+            {/* Visibility Selector */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-2">Quyền riêng tư</label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditVisibility(0)}
+                  className={cn("flex items-center gap-2 px-3 py-2 rounded border", editVisibility === 0 ? "border-blue-500 bg-blue-50" : "border-gray-300")}
+                >
+                  <Globe2 className="w-4 h-4" />
+                  Công khai
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditVisibility(1)}
+                  className={cn("flex items-center gap-2 px-3 py-2 rounded border", editVisibility === 1 ? "border-blue-500 bg-blue-50" : "border-gray-300")}
+                >
+                  <Users className="w-4 h-4" />
+                  Bạn bè
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditVisibility(2)}
+                  className={cn("flex items-center gap-2 px-3 py-2 rounded border", editVisibility === 2 ? "border-blue-500 bg-blue-50" : "border-gray-300")}
+                >
+                  <Lock className="w-4 h-4" />
+                  Chỉ mình tôi
+                </button>
+              </div>
+            </div>
+
+            {/* Image Upload */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-2">Hình ảnh</label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleEditFileChange}
+                className="mb-2"
+                disabled={editUploading || editImages.length >= 4}
+              />
+              {editUploading && <p className="text-sm text-gray-500">Đang tải...</p>}
+
+              {/* Preview Images */}
+              {editPreviews.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {editPreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-24 object-cover rounded" />
+                      <button
+                        type="button"
+                        onClick={() => removeEditImage(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="flex justify-end gap-2">
               <button
@@ -281,7 +353,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
               <button
                 onClick={async () => {
                   try {
-                    await updatePost(post.id, editContent, post.images);
+                    await updatePost(post.id, editContent, editImages, editVisibility);
                     toast.success('Cập nhật thành công!');
                     setShowEdit(false);
                   } catch {
@@ -289,6 +361,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
                   }
                 }}
                 className="bg-blue-500 text-white px-4 py-1 rounded"
+                disabled={editUploading}
               >
                 Lưu
               </button>

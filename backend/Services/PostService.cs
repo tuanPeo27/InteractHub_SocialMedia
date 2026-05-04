@@ -91,7 +91,7 @@ public class PostsService : IPostsService
         };
     }
 
-    public async Task<bool> UpdateAsync(int id, string currentUserId, UpdatePostRequest dto)
+    public async Task<PostResponse> UpdateAsync(int id, string currentUserId, UpdatePostRequest dto)
     {
         var post = await _context.Posts.FindAsync(id);
         if (post == null) throw new Exception("Post not found");
@@ -105,7 +105,17 @@ public class PostsService : IPostsService
         post.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
-        return true;
+
+        return new PostResponse
+        {
+            Id = post.Id,
+            UserId = post.UserId,
+            Content = post.Content,
+            ImageUrl = post.ImageUrl,
+            Visibility = post.Visibility,
+            CreatedAt = post.CreatedAt,
+            UpdatedAt = post.UpdatedAt
+        };
     }
 
     public async Task<bool> DeleteAsync(int id, string userId)
