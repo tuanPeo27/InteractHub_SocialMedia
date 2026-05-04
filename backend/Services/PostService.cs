@@ -112,7 +112,7 @@ public class PostsService : IPostsService
             UserId = post.UserId,
             Content = post.Content,
             ImageUrl = post.ImageUrl,
-            Visibility = post.Visibility,
+            Visibility = (int)post.Visibility,
             CreatedAt = post.CreatedAt,
             UpdatedAt = post.UpdatedAt
         };
