@@ -100,7 +100,7 @@ public class PostsService : IPostsService
             throw new UnauthorizedAccessException("You cannot edit this post");
 
         post.Content = dto.Content ?? post.Content;
-        post.ImageUrl = dto.ImageUrl ?? post.ImageUrl;
+        post.ImageUrl = dto.ImageUrl == "" ? null : dto.ImageUrl ?? post.ImageUrl;
         post.Visibility = dto.Visibility ?? post.Visibility;
         post.UpdatedAt = DateTime.UtcNow;
 
