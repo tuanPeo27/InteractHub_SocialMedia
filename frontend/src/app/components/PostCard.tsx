@@ -15,7 +15,6 @@ import { cn } from './ui/utils';
 import { reportService } from '../services/reportService';
 import { likesService } from '../services/likesService';
 import { getVietnamTime } from '../utils/dateHelper';
-import { useImageUpload } from '../hooks/useImageUpload';
 
 interface PostCardProps {
   post: Post;
@@ -32,7 +31,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [editVisibility, setEditVisibility] = useState(post.visibility);
-  const { images: editImages, previews: editPreviews, uploading: editUploading, handleFileChange: handleEditFileChange, removeImage: removeEditImage, clearImages: clearEditImages } = useImageUpload(4);
+  const [editImagesState, setEditImagesState] = useState<string[]>([]);
+  const [editPreviewsState, setEditPreviewsState] = useState<string[]>([]);
+  const [editUploading, setEditUploading] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const isLiked = user ? post.likes.includes(user.id) : false;
   const isOwnPost = user?.id === post.userId;
@@ -60,10 +61,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
   const handleEdit = () => {
     setEditContent(post.content);
     setEditVisibility(post.visibility);
-    clearEditImages();
-    // Set existing images as previews
-    editPreviews.splice(0, editPreviews.length, ...post.images);
-    editImages.splice(0, editImages.length, ...post.images);
+    setEditImagesState([...post.images]);
+    setEditPreviewsState([...post.images]);
     setShowEdit(true);
   };
 
@@ -317,21 +316,37 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
                 type="file"
                 accept="image/*"
                 multiple
-                onChange={handleEditFileChange}
+                onChange={(e) => {
+                  const files = e.target.files;
+                  if (!files) return;
+                  setEditUploading(true);
+                  Array.from(files).slice(0, 4 - editImagesState.length).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      setEditPreviewsState(prev => [...prev, reader.result as string]);
+                      setEditImagesState(prev => [...prev, reader.result as string]);
+                    };
+                    reader.readAsDataURL(file);
+                  });
+                  setEditUploading(false);
+                }}
                 className="mb-2"
-                disabled={editUploading || editImages.length >= 4}
+                disabled={editUploading || editImagesState.length >= 4}
               />
               {editUploading && <p className="text-sm text-gray-500">Đang tải...</p>}
 
               {/* Preview Images */}
-              {editPreviews.length > 0 && (
+              {editPreviewsState.length > 0 && (
                 <div className="grid grid-cols-2 gap-2 mt-2">
-                  {editPreviews.map((preview, index) => (
+                  {editPreviewsState.map((preview: string, index: number) => (
                     <div key={index} className="relative">
                       <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-24 object-cover rounded" />
                       <button
                         type="button"
-                        onClick={() => removeEditImage(index)}
+                        onClick={() => {
+                          setEditPreviewsState(prev => prev.filter((_, i) => i !== index));
+                          setEditImagesState(prev => prev.filter((_, i) => i !== index));
+                        }}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
                       >
                         ×
@@ -353,7 +368,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
               <button
                 onClick={async () => {
                   try {
-                    await updatePost(post.id, editContent, editImages, editVisibility);
+                    await updatePost(post.id, editContent, editImagesState, editVisibility);
                     toast.success('Cập nhật thành công!');
                     setShowEdit(false);
                   } catch {
