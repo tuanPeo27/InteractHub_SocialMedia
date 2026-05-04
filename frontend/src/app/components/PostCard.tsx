@@ -12,6 +12,7 @@ import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import CommentSection from './CommentSection';
 import { toast } from 'sonner';
 import { cn } from './ui/utils';
+import { reportService } from '../services/reportService';
 import { likesService } from '../services/likesService';
 import { getVietnamTime } from '../utils/dateHelper';
 
@@ -67,26 +68,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
     }
   };
 
-  const handleReport = () => {
-    if (onReport) {
-      onReport(post.id);
-    } else {
-      // Save report to localStorage
-      const reports = JSON.parse(localStorage.getItem('reports') || '[]');
-      const newReport = {
-        id: `r${Date.now()}`,
-        postId: post.id,
-        post: post,
-        reportedBy: user,
-        reason: 'Nội dung không phù hợp',
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-      };
-      reports.push(newReport);
-      localStorage.setItem('reports', JSON.stringify(reports));
+  const handleReport = async () => {
+    try {
+      await reportService.createReport(post.id, 'Nội dung không phù hợp');
+      toast.success('Đã báo cáo bài viết!');
+    } catch (error) {
+      toast.error('Báo cáo thất bại!');
     }
-    toast.success('Đã báo cáo bài viết!');
-  };
+  }
 
   const handleOpenLikes = async () => {
     try {
