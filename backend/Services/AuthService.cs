@@ -90,6 +90,15 @@ public class AuthService : IAuthService
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
 
+        if (result.IsLockedOut)
+        {
+            return new AuthResponse
+            {
+                success = false,
+                message = "Tài khoản đã bị ban"
+            };
+        }
+
         if (!result.Succeeded)
         {
             return new AuthResponse

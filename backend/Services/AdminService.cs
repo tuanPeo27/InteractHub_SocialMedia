@@ -77,6 +77,7 @@ public class AdminService : IAdminService
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return false;
 
+        user.LockoutEnabled = true;
         user.LockoutEnd = DateTimeOffset.MaxValue;
         await _userManager.UpdateAsync(user);
         return true;
