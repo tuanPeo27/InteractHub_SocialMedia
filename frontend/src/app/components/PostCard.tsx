@@ -22,7 +22,7 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
   const { user } = useAuth();
-  const { likePost, unlikePost, deletePost, updatePost } = usePosts();
+  const { likePost, unlikePost, deletePost, updatePost, ensurePostComments, ensurePostLikes } = usePosts();
   const [showComments, setShowComments] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
   const [likeUsers, setLikeUsers] = useState<any[]>([]);
@@ -32,6 +32,16 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const isLiked = user ? post.likes.includes(user.id) : false;
   const isOwnPost = user?.id === post.userId;
+
+  useEffect(() => {
+    void ensurePostLikes(post.id);
+  }, [post.id, ensurePostLikes]);
+
+  useEffect(() => {
+    if (showComments) {
+      void ensurePostComments(post.id);
+    }
+  }, [showComments, post.id, ensurePostComments]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

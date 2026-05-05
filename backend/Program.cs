@@ -187,50 +187,60 @@ var app = builder.Build();
 // =======================
 // AUTO MIGRATE DATABASE
 // =======================
-using (var scope = app.Services.CreateScope())
+var shouldMigrate = app.Configuration.GetValue("Database:AutoMigrate", app.Environment.IsDevelopment());
+var shouldSeed = app.Configuration.GetValue("Database:SeedIdentity", app.Environment.IsDevelopment());
+
+if (shouldMigrate || shouldSeed)
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
 
-    var db = services.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-
-    string[] roles = { "Admin", "User" };
-
-    foreach (var role in roles)
+    if (shouldMigrate)
     {
-        if (!roleManager.RoleExistsAsync(role).GetAwaiter().GetResult())
-        {
-            roleManager.CreateAsync(new IdentityRole(role))
-                .GetAwaiter().GetResult();
-        }
+        var db = services.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
     }
 
-    var adminEmail = "admin@gmail.com";
-    var adminPassword = "Admin123!";
-
-    var adminUser = userManager.FindByEmailAsync(adminEmail)
-        .GetAwaiter().GetResult();
-
-    if (adminUser == null)
+    if (shouldSeed)
     {
-        var user = new ApplicationUser
-        {
-            UserName = "admin",
-            Email = adminEmail,
-            FullName = "System Admin",
-            EmailConfirmed = true
-        };
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-        var result = userManager.CreateAsync(user, adminPassword)
+        string[] roles = { "Admin", "User" };
+
+        foreach (var role in roles)
+        {
+            if (!roleManager.RoleExistsAsync(role).GetAwaiter().GetResult())
+            {
+                roleManager.CreateAsync(new IdentityRole(role))
+                    .GetAwaiter().GetResult();
+            }
+        }
+
+        var adminEmail = "admin@gmail.com";
+        var adminPassword = "Admin123!";
+
+        var adminUser = userManager.FindByEmailAsync(adminEmail)
             .GetAwaiter().GetResult();
 
-        if (result.Succeeded)
+        if (adminUser == null)
         {
-            userManager.AddToRoleAsync(user, "Admin")
+            var user = new ApplicationUser
+            {
+                UserName = "admin",
+                Email = adminEmail,
+                FullName = "System Admin",
+                EmailConfirmed = true
+            };
+
+            var result = userManager.CreateAsync(user, adminPassword)
                 .GetAwaiter().GetResult();
+
+            if (result.Succeeded)
+            {
+                userManager.AddToRoleAsync(user, "Admin")
+                    .GetAwaiter().GetResult();
+            }
         }
     }
 }
