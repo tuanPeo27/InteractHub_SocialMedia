@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { toast } from 'sonner';
 import { Notification } from '../types';
 import { useAuth } from './AuthContext';
 import { useUsers } from './UsersContext';
@@ -99,8 +100,9 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
         // Listen for ban event and log the user out immediately
         signalRService.onUserBanned((message) => {
-          console.log('SignalR UserBanned event received', message);
-          alert(message || 'Tài khoản của bạn đã bị ban.');
+          const text = message || 'Tài khoản đã bị ban.';
+          toast.error(text);
+          console.log('SignalR UserBanned event received', text);
           logout();
         });
       } else {
