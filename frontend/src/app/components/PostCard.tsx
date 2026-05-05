@@ -35,11 +35,27 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
   const [editPreviewsState, setEditPreviewsState] = useState<string[]>([]);
   const [editUploading, setEditUploading] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const isLiked = user ? post.likes.includes(user.id) : false;
   const isOwnPost = user?.id === post.userId;
 
   useEffect(() => {
-    void ensurePostLikes(post.id);
+    if (!cardRef.current) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          void ensurePostLikes(post.id);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
   }, [post.id, ensurePostLikes]);
 
   useEffect(() => {
@@ -108,7 +124,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
 
   return (
     <>
-      <Card>
+      <Card ref={cardRef} style={{ contentVisibility: 'auto', containIntrinsicSize: '820px' }}>
 
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -217,6 +233,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
                   key={index}
                   src={image}
                   alt={`Post image ${index + 1}`}
+                  loading="lazy"
+                  decoding="async"
                   className={cn(
                     "w-full h-full object-cover",
                     post.images.length === 3 && index === 0 ? "row-span-2" : "aspect-square"
