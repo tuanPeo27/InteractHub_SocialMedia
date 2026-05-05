@@ -99,6 +99,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
         // Listen for ban event and log the user out immediately
         signalRService.onUserBanned((message) => {
+          console.log('SignalR UserBanned event received', message);
           alert(message || 'Tài khoản của bạn đã bị ban.');
           logout();
         });

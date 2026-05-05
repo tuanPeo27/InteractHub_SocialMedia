@@ -86,12 +86,16 @@ export const signalRService = {
   onUserBanned: (callback: (message: string) => void) => {
     if (connection) {
       connection.on('UserBanned', callback);
+      connection.on('userbanned', callback);
+      connection.on('userBanned', callback);
     }
   },
 
   offUserBanned: () => {
     if (connection) {
       connection.off('UserBanned');
+      connection.off('userbanned');
+      connection.off('userBanned');
     }
   },
 
