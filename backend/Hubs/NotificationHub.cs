@@ -9,6 +9,8 @@ public interface INotificationClient
     Task NotificationCreated(NotificationResponse notification);
     Task NotificationRead(int notificationId);
     Task NotificationDeleted(int notificationId);
+
+    Task UserBanned(string message);
 }
 
 [Authorize]

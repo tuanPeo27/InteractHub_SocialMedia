@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { toast } from 'sonner';
 import { Notification } from '../types';
 import { useAuth } from './AuthContext';
 import { useUsers } from './UsersContext';
@@ -21,7 +22,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { users, loading: usersLoading } = useUsers();
 
   const mergeNotificationsById = (incoming: Notification[]) => {
@@ -46,7 +47,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
       try {
         const apiNotifications = await notificationsService.getAll();
-        
+
         const userLookup = new Map(users.map((item) => [item.id, item] as const));
         const convertedNotifications = apiNotifications.map((notification) => {
           return toFrontendNotification(notification, userLookup);
@@ -73,7 +74,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       const hubUrl = `${apiUrl}/hubs/notifications`;
 
       const connection = await signalRService.connect(hubUrl);
-      
+
       if (connection) {
         // Listen for new notifications
         signalRService.onNotificationCreated((notification) => {
@@ -96,6 +97,14 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
         signalRService.onNotificationDeleted((notificationId) => {
           setNotifications((prev) => prev.filter((n) => n.id !== String(notificationId)));
         });
+
+        // Listen for ban event and log the user out immediately
+        signalRService.onUserBanned((message) => {
+          const text = message || 'Tài khoản đã bị ban.';
+          toast.error(text);
+          console.log('SignalR UserBanned event received', text);
+          logout();
+        });
       } else {
         console.error('Failed to establish SignalR connection');
       }
@@ -107,6 +116,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       signalRService.offNotificationCreated();
       signalRService.offNotificationRead();
       signalRService.offNotificationDeleted();
+      signalRService.offUserBanned();
     };
   }, [user, users]);
 
