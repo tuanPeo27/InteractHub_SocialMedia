@@ -90,7 +90,7 @@ public class AuthService : IAuthService
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
 
-        if (result.IsLockedOut)
+        if (await _userManager.IsLockedOutAsync(user))
         {
             return new AuthResponse
             {

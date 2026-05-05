@@ -83,5 +83,17 @@ export const signalRService = {
     }
   },
 
+  onUserBanned: (callback: (message: string) => void) => {
+    if (connection) {
+      connection.on('UserBanned', callback);
+    }
+  },
+
+  offUserBanned: () => {
+    if (connection) {
+      connection.off('UserBanned');
+    }
+  },
+
   getConnection: () => connection,
 };
