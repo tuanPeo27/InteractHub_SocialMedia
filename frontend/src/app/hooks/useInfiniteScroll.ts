@@ -20,25 +20,21 @@ export const useInfiniteScroll = <T,>({
   const [displayedItems, setDisplayedItems] = useState<T[]>([]);
 
   useEffect(() => {
-    setDisplayedItems(items.slice(0, itemsPerPage));
-    setPage(1);
-  }, [items, itemsPerPage]);
+    setDisplayedItems(items.slice(0, page * itemsPerPage));
+  }, [items, page, itemsPerPage]);
 
   const hasMore = displayedItems.length < items.length;
 
   const loadMore = useCallback(() => {
-    if (!hasMore) return;
-    
-    const nextPage = page + 1;
-    const newItems = items.slice(0, nextPage * itemsPerPage);
-    setDisplayedItems(newItems);
+    const nextPage = Math.min(page + 1, Math.ceil(items.length / itemsPerPage));
+    if (nextPage === page) return;
+
     setPage(nextPage);
-  }, [page, items, itemsPerPage, hasMore]);
+  }, [page, items.length, itemsPerPage]);
 
   const reset = useCallback(() => {
-    setDisplayedItems(items.slice(0, itemsPerPage));
     setPage(1);
-  }, [items, itemsPerPage]);
+  }, []);
 
   return {
     displayedItems,
