@@ -48,6 +48,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onReport }) => {
       (entries) => {
         if (entries[0].isIntersecting) {
           void ensurePostLikes(post.id);
+          void ensurePostComments(post.id);
           observer.disconnect();
         }
       },
