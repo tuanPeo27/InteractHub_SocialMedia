@@ -74,11 +74,9 @@ public class PostsController : ControllerBase
 
         try
         {
-            var success = await _service.UpdateAsync(id, userId, dto);
+            var updatedPost = await _service.UpdateAsync(id, userId, dto);
 
-            if (!success) return NotFound();
-
-            return Ok("Updated successfully");
+            return Ok(updatedPost);
         }
         catch (UnauthorizedAccessException)
         {

@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
 import { Comment, Post } from '../types';
 import { useAuth } from './AuthContext';
 import { useUsers } from './UsersContext';
 import { commentsService } from '../services/commentsService';
 import { likesService } from '../services/likesService';
 import { postsService } from '../services/postsService';
-import { toFrontendPost } from '../services/mappers';
+import { DEFAULT_AVATAR, toFrontendPost } from '../services/mappers';
 import type { ApiComment, ApiLikeInfo } from '../services/types';
 
 interface PostContextType {
@@ -18,10 +18,12 @@ interface PostContextType {
   deleteComment: (postId: string, commentId: string) => Promise<void>;
   sharePost: (postId: string) => void;
   deletePost: (postId: string) => Promise<void>;
-  updatePost: (postId: string, content: string, images: string[]) => Promise<void>;
+  updatePost: (postId: string, content: string, images: string[], visibility: number) => Promise<void>;
   getPostById: (postId: string) => Post | undefined;
   getPostsByHashtag: (hashtag: string) => Post[];
   searchPosts: (query: string) => Post[];
+  ensurePostComments: (postId: string) => Promise<void>;
+  ensurePostLikes: (postId: string) => Promise<void>;
 }
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
@@ -30,38 +32,63 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { users, loading: usersLoading } = useUsers();
+  const { users } = useUsers();
+  const loadedCommentsRef = useRef(new Set<string>());
+  const loadedLikesRef = useRef(new Set<string>());
+
+  const buildLikesArray = (postId: string, likeInfo: ApiLikeInfo | null) => {
+    if (!likeInfo) {
+      return [] as string[];
+    }
+
+    const currentUserId = user?.id;
+    const includeCurrentUser = Boolean(likeInfo.isLiked && currentUserId);
+    const otherLikeCount = Math.max(likeInfo.totalLikes - (includeCurrentUser ? 1 : 0), 0);
+
+    return [
+      ...(includeCurrentUser && currentUserId ? [currentUserId] : []),
+      ...Array.from({ length: otherLikeCount }, (_, index) => `like-${postId}-${index}`),
+    ];
+  };
+
+  const mapApiComments = (apiComments: ApiComment[]) => {
+    const userLookup = new Map(users.map((item) => [item.id, item] as const));
+
+    return apiComments.map((comment) => ({
+      id: String(comment.id),
+      postId: String(comment.postId),
+      userId: comment.userId,
+      user:
+        userLookup.get(comment.userId) ||
+        {
+          id: comment.userId,
+          username: comment.userId,
+          email: `${comment.userId}@interacthub.local`,
+          fullName: comment.userId,
+          avatar: DEFAULT_AVATAR,
+          bio: '',
+          createdAt: new Date().toISOString(),
+        },
+      content: comment.content,
+      createdAt: comment.createdAt,
+    }));
+  };
 
   useEffect(() => {
-    if (usersLoading) return;
-
     const loadPosts = async () => {
       setLoading(true);
       try {
         const apiPosts = await postsService.getFeed();
 
-        const details = await Promise.all(
-          apiPosts.map(async (post) => ({
-            post,
-            comments: await commentsService.getByPost(String(post.id)).catch(() => [] as ApiComment[]),
-            likeInfo: await likesService.getInfo(String(post.id)).catch(() => null as ApiLikeInfo | null),
-          })),
-        );
-
         const userLookup = new Map(users.map(u => [u.id, u]));
-        const commentLookup = new Map();
-        const likeLookup = new Map();
+        const commentLookup = new Map<number, ApiComment[]>();
+        const likeLookup = new Map<number, ApiLikeInfo>();
 
-        details.forEach((detail) => {
-          commentLookup.set(detail.post.id, detail.comments);
-          if (detail.likeInfo) {
-            likeLookup.set(detail.post.id, detail.likeInfo);
-          }
-        });
-
-        setPosts(apiPosts.map(post =>
-          toFrontendPost(post, userLookup, commentLookup, likeLookup, user?.id)
-        ));
+        setPosts(
+          apiPosts.map((post) =>
+            toFrontendPost(post, userLookup, commentLookup, likeLookup, user?.id)
+          ),
+        );
       } catch (err) {
         console.error(err);
         setPosts([]);
@@ -71,7 +98,84 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     loadPosts();
-  }, [usersLoading, user?.id]);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (users.length === 0) {
+      return;
+    }
+
+    const userLookup = new Map(users.map((item) => [item.id, item] as const));
+
+    setPosts((current) =>
+      current.map((post) => {
+        const nextUser = userLookup.get(post.userId) || post.user;
+        let commentsChanged = false;
+        const nextComments = post.comments.map((comment) => {
+          const nextCommentUser = userLookup.get(comment.userId) || comment.user;
+          if (nextCommentUser !== comment.user) {
+            commentsChanged = true;
+            return { ...comment, user: nextCommentUser };
+          }
+          return comment;
+        });
+
+        if (nextUser === post.user && !commentsChanged) {
+          return post;
+        }
+
+        return {
+          ...post,
+          user: nextUser,
+          comments: commentsChanged ? nextComments : post.comments,
+        };
+      }),
+    );
+  }, [users]);
+
+  const ensurePostComments = async (postId: string) => {
+    if (loadedCommentsRef.current.has(postId)) {
+      return;
+    }
+
+    try {
+      const apiComments = await commentsService.getByPost(postId);
+      const mappedComments = mapApiComments(apiComments);
+
+      loadedCommentsRef.current.add(postId);
+
+      setPosts((current) =>
+        current.map((post) =>
+          post.id === postId ? { ...post, comments: mappedComments } : post,
+        ),
+      );
+    } catch (error) {
+      console.error('Failed to load comments:', error);
+      loadedCommentsRef.current.delete(postId);
+    }
+  };
+
+  const ensurePostLikes = async (postId: string) => {
+    if (loadedLikesRef.current.has(postId)) {
+      return;
+    }
+
+    try {
+      const likeInfo = await likesService.getInfo(postId);
+      const likes = buildLikesArray(postId, likeInfo);
+
+      loadedLikesRef.current.add(postId);
+
+      setPosts((current) =>
+        current.map((post) =>
+          post.id === postId ? { ...post, likes } : post,
+        ),
+      );
+    } catch (error) {
+      console.error('Failed to load likes:', error);
+      loadedLikesRef.current.delete(postId);
+    }
+  };
 
   // console.log("posts:", posts);
   const createPost = async (content: string, images: string[], hashtags: string[], visibility: number) => {
@@ -89,20 +193,30 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const likePost = async (postId: string) => {
     if (!user) return;
 
-    await likesService.toggle(postId);
-    const likeInfo = await likesService.getInfo(postId);
+    let previousLikes: string[] = [];
 
     setPosts((current) => current.map((post) => {
       if (post.id !== postId) {
         return post;
       }
 
-      const likes = likeInfo.isLiked
-        ? [user.id, ...Array.from({ length: Math.max(likeInfo.totalLikes - 1, 0) }, (_, index) => `like-${postId}-${index}`)]
-        : Array.from({ length: likeInfo.totalLikes }, (_, index) => `like-${postId}-${index}`);
+      previousLikes = post.likes;
+      const hasLiked = post.likes.includes(user.id);
+      const likes = hasLiked
+        ? post.likes.filter((like) => like !== user.id)
+        : [user.id, ...post.likes];
 
       return { ...post, likes };
     }));
+
+    try {
+      await likesService.toggle(postId);
+    } catch (error) {
+      setPosts((current) => current.map((post) =>
+        post.id === postId ? { ...post, likes: previousLikes } : post,
+      ));
+      throw error;
+    }
   };
 
   const unlikePost = async (postId: string) => {
@@ -112,36 +226,81 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const addComment = async (postId: string, content: string) => {
     if (!user) return;
 
-    const createdComment = await commentsService.create(Number(postId), content);
-    const userLookup = new Map(users.map((item) => [item.id, item] as const));
-
-    const comment: Comment = {
-      id: String(createdComment.id),
-      postId: String(createdComment.postId),
-      userId: createdComment.userId,
-      user: userLookup.get(createdComment.userId) || user,
-      content: createdComment.content,
-      createdAt: createdComment.createdAt,
+    const tempId = `temp-${Date.now()}`;
+    const tempComment: Comment = {
+      id: tempId,
+      postId: String(postId),
+      userId: user.id,
+      user,
+      content,
+      createdAt: new Date().toISOString(),
     };
 
     setPosts((current) => current.map((post) => {
       if (post.id === postId) {
-        return { ...post, comments: [comment, ...post.comments] };
+        return { ...post, comments: [tempComment, ...post.comments] };
       }
 
       return post;
     }));
+
+    try {
+      const createdComment = await commentsService.create(Number(postId), content);
+      const userLookup = new Map(users.map((item) => [item.id, item] as const));
+
+      const comment: Comment = {
+        id: String(createdComment.id),
+        postId: String(createdComment.postId),
+        userId: createdComment.userId,
+        user: userLookup.get(createdComment.userId) || user,
+        content: createdComment.content,
+        createdAt: createdComment.createdAt,
+      };
+
+      setPosts((current) => current.map((post) => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: post.comments.map((item) => (item.id === tempId ? comment : item)),
+          };
+        }
+
+        return post;
+      }));
+    } catch (error) {
+      setPosts((current) => current.map((post) => {
+        if (post.id === postId) {
+          return { ...post, comments: post.comments.filter((item) => item.id !== tempId) };
+        }
+
+        return post;
+      }));
+      throw error;
+    }
   };
 
   const deleteComment = async (postId: string, commentId: string) => {
-    await commentsService.delete(commentId);
+    let previousComments: Comment[] | null = null;
+
     setPosts((current) => current.map((post) => {
       if (post.id === postId) {
+        previousComments = post.comments;
         return { ...post, comments: post.comments.filter((c) => c.id !== commentId) };
       }
 
       return post;
     }));
+
+    try {
+      await commentsService.delete(commentId);
+    } catch (error) {
+      if (previousComments) {
+        setPosts((current) => current.map((post) =>
+          post.id === postId ? { ...post, comments: previousComments || post.comments } : post,
+        ));
+      }
+      throw error;
+    }
   };
 
   const sharePost = (postId: string) => {
@@ -166,14 +325,15 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const updatePost = async (postId: string, content: string, images: string[]) => {
+  const updatePost = async (postId: string, content: string, images: string[], visibility: number) => {
     const previousPosts = posts;
 
     try {
       const updated = await postsService.update(
         postId,
         content,
-        images[0] || null
+        images[0] || null,
+        visibility
       );
 
       const userLookup = new Map(users.map((u) => [u.id, u]));
@@ -227,6 +387,8 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         getPostById,
         getPostsByHashtag,
         searchPosts,
+        ensurePostComments,
+        ensurePostLikes,
       }}
     >
       {children}

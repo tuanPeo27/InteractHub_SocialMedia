@@ -11,31 +11,49 @@ interface UsersContextType {
 }
 
 const UsersContext = createContext<UsersContextType | undefined>(undefined);
+const usersCacheKey = 'interacthub_users_cache';
 
 export const UsersProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<User[]>(() => {
+    const cached = localStorage.getItem(usersCacheKey);
+    if (!cached) {
+      return [];
+    }
 
-  const refreshUsers = useCallback(async () => {
-    setLoading(true);
+    try {
+      return JSON.parse(cached) as User[];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => users.length === 0);
+
+  const refreshUsers = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setLoading(true);
+    }
     try {
       const apiUsers = await usersService.getAll();
       // console.log("API USERS:", apiUsers); // 👈 thêm dòng này
-
-      setUsers(apiUsers.map((user) => mapApiUserToUser(user)));
+      const mappedUsers = apiUsers.map((user) => mapApiUserToUser(user));
+      setUsers(mappedUsers);
+      localStorage.setItem(usersCacheKey, JSON.stringify(mappedUsers));
     } catch (error) {
-
       console.error("ERROR USERS:", error); // 👈 thêm dòng này
-      setUsers([]);
+      if (users.length === 0) {
+        setUsers([]);
+      }
     } finally {
-      setLoading(false);
+      if (!options?.silent) {
+        setLoading(false);
+      }
     }
-  }, []);
+  }, [users.length]);
 
   useEffect(() => {
 
-    void refreshUsers();
-  }, []);
+    void refreshUsers({ silent: users.length > 0 });
+  }, [refreshUsers, users.length]);
 
   const getUserById = (userId: string) => users.find((user) => user.id === userId);
 

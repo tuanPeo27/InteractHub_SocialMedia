@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { Users, UserPlus, UserMinus, Check, X } from 'lucide-react';
 import { useFriends } from '../contexts/FriendContext';
@@ -13,15 +13,32 @@ import FriendList from '../components/FriendList';
 const FriendsPage: React.FC = () => {
   const { friends, friendRequests, getPendingRequests, acceptFriendRequest, rejectFriendRequest, removeFriend } = useFriends();
   const pendingRequests = getPendingRequests();
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
 
-  const handleAccept = (requestId: string) => {
-    acceptFriendRequest(requestId);
-    toast.success('Đã chấp nhận lời mời kết bạn!');
+  const handleAccept = async (requestId: string) => {
+    if (pendingActionId) return;
+    setPendingActionId(requestId);
+    try {
+      await acceptFriendRequest(requestId);
+      toast.success('Đã chấp nhận lời mời kết bạn!');
+    } catch {
+      toast.error('Chấp nhận lời mời thất bại!');
+    } finally {
+      setPendingActionId(null);
+    }
   };
 
-  const handleReject = (requestId: string) => {
-    rejectFriendRequest(requestId);
-    toast.success('Đã từ chối lời mời kết bạn!');
+  const handleReject = async (requestId: string) => {
+    if (pendingActionId) return;
+    setPendingActionId(requestId);
+    try {
+      await rejectFriendRequest(requestId);
+      toast.success('Đã từ chối lời mời kết bạn!');
+    } catch {
+      toast.error('Từ chối lời mời thất bại!');
+    } finally {
+      setPendingActionId(null);
+    }
   };
 
   const handleRemoveFriend = (userId: string) => {
@@ -65,7 +82,7 @@ const FriendsPage: React.FC = () => {
               <div className="space-y-3">
                 {pendingRequests.length > 0 ? (
                   pendingRequests.map((request) => (
-                    <div key={request.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg">
+                    <div key={request.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 hover:bg-gray-50 rounded-lg">
                       <Link to={`/profile/${request.fromUser.id}`}>
                         <Avatar className="w-14 h-14">
                           <AvatarImage src={request.fromUser.avatar} alt={request.fromUser.fullName} />
@@ -78,10 +95,12 @@ const FriendsPage: React.FC = () => {
                         </Link>
                         <p className="text-sm text-gray-500">@{request.fromUser.username}</p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         <Button
                           size="sm"
                           onClick={() => handleAccept(request.id)}
+                          disabled={pendingActionId === request.id}
+                          className="w-full sm:w-auto"
                         >
                           <Check className="w-4 h-4 mr-2" />
                           Chấp nhận
@@ -90,6 +109,8 @@ const FriendsPage: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => handleReject(request.id)}
+                          disabled={pendingActionId === request.id}
+                          className="w-full sm:w-auto"
                         >
                           <X className="w-4 h-4 mr-2" />
                           Từ chối

@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using backend.DTOs.Request;
 using backend.DTOs.Response;
 
+using backend.Hubs;
 using backend.Interfaces;
 using backend.Models.Entities;
 
@@ -13,15 +15,18 @@ public class AdminService : IAdminService
     private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IHubContext<NotificationHub, INotificationClient> _hubContext;
 
     public AdminService(
         AppDbContext context,
         UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager)
+        RoleManager<IdentityRole> roleManager,
+        IHubContext<NotificationHub, INotificationClient> hubContext)
     {
         _context = context;
         _userManager = userManager;
         _roleManager = roleManager;
+        _hubContext = hubContext;
     }
 
     public async Task<IEnumerable<ReportResponse>> GetReportsAsync()
@@ -77,8 +82,11 @@ public class AdminService : IAdminService
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return false;
 
+        user.LockoutEnabled = true;
         user.LockoutEnd = DateTimeOffset.MaxValue;
         await _userManager.UpdateAsync(user);
+        await _hubContext.Clients.User(userId)
+        .UserBanned("Tài khoản của bạn đã bị ban");
         return true;
     }
 

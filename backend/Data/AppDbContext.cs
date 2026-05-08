@@ -65,7 +65,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(n => n.FromUserId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        // 🔥 FIX CASCADE 
+        // Fix cascade
 
         // Comment
         builder.Entity<Comment>()

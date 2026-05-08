@@ -16,10 +16,11 @@ export const postsService = {
     return response.data;
   },
 
-  async update(postId: string, content: string, imageUrl: string | null) {
+  async update(postId: string, content: string, imageUrl: string | null, visibility: number) {
     const response = await apiClient.put<ApiPost>(`/Posts/${postId}`, {
       content,
-      imageUrl,
+      imageUrl: imageUrl || "",
+      visibility,
     });
     return response.data;
   },
